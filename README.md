@@ -2,8 +2,6 @@
 [![Documentation Status](https://xqy2006.github.io/store/badge1.svg)](https://xqy2006.github.io)
 [![Documentation Status](https://xqy2006.github.io/store/badge2.svg)](https://xqy2006.github.io)
 
-[![Documentation Status](https://img.shields.io/github/checks-status/xqy2006/xqy2006.github.io/main)](https://xqy2006.github.io)
-[![Documentation Status](https://img.shields.io/cirrus/github/xqy2006/xqy2006.github.io)](https://xqy2006.github.io)
 [![Documentation Status](https://img.shields.io/github/last-commit/xqy2006/xqy2006.github.io)](https://xqy2006.github.io)
 
 
