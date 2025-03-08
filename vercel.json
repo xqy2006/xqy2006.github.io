@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "buildCommand": "npm run docs:build",
+  "installCommand": "npm install",
+  "outputDirectory": "docs/.vuepress/dist"
+}
