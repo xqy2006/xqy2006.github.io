@@ -1090,3 +1090,18 @@ PCbuild/amd64/_freeze_module.exe _pyrepl ./Lib/_pyrepl/__main.py ./Python/frozen
 回到VS，选择`Python`项目，右键生成，生成完后会报很多错，不用理会，此时`amd64`文件夹下已经生成可单文件运行的`python.exe`，包含了标准库，如果还需拓展库的话，可以在`python.exe`的同文件夹下防止`python313.zip`，zip中压缩库文件（也可以在运行`python ./Tools/build/freeze_modules.py --step=0`之前将这些库放置到源码的Lib目录下进行freeze）
 
 这里提供一个成品：[python](/python.exe)
+
+------
+
+**update：**
+这样编译完后每次运行Python会因为找不到环境变量而产生Warning：
+
+```
+Could not find platform independent libraries <prefix>
+```
+
+可以修改`\Modules\getpath.py`，删掉其中的`warn('Could not find platform independent libraries <prefix>')`
+
+上面给的成品未作修改
+
+`python ./Tools/build/freeze_modules.py --step=0`命令将会修改`Lib`文件夹中的部分文件，所以请不要重复运行，如需重新运行请删除`LIb`文件夹并重新解压
