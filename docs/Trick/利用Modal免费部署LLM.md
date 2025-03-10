@@ -70,7 +70,7 @@ class qwq:
     @modal.enter()
     def e(self):
         from llama_cpp import Llama
-        self.llm = Llama(model_path=IMAGE_MODEL_DIR+"/Qwen_QwQ-32B-Q4_K_M.gguf", n_ctx=4096,seed=-1,n_gpu_layers=-1)
+        self.llm = Llama(model_path=IMAGE_MODEL_DIR+"/Qwen_QwQ-32B-Q4_K_M.gguf", n_ctx=8192,seed=-1,n_gpu_layers=-1)
         #import subprocess
         #output = subprocess.check_output(["nvidia-smi"], text=True)
         #print(output)
