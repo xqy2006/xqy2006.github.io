@@ -1,5 +1,5 @@
 ---
-title: 寻找a(b+c)+b(a+c)+c(a+b)=N正整数解
+title: 寻找a/(b+c)+b/(a+c)+c/(a+b)=N正整数解
 createTime: 2025/03/08 02:41:48
 permalink: /article/edfngw96/
 ---
