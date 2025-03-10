@@ -2,6 +2,7 @@
 title: 寻找a/(b+c)+b/(a+c)+c/(a+b)=N正整数解
 createTime: 2025/03/08 02:41:48
 permalink: /article/edfngw96/
+tags: [python,sage]
 ---
 
 根据椭圆曲线加法原理，只要找到1组有理解后一直迭代即可
