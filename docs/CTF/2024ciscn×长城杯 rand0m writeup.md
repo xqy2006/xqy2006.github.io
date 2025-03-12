@@ -2,7 +2,7 @@
 title: 2024ciscn长城杯_rand0m_writeup
 createTime: 2025/03/08 14:24:33
 permalink: /article/qnkp71ue/
-tags: [pyd]
+tags: [pyd,reverse]
 ---
 check.pyd丢进ida，查看string，发现可疑数字字符串
 
