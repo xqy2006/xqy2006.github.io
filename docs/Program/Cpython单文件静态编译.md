@@ -1105,3 +1105,11 @@ Could not find platform independent libraries <prefix>
 上面给的成品未作修改
 
 `python ./Tools/build/freeze_modules.py --step=0`命令将会修改`Lib`文件夹中的部分文件，所以请不要重复运行，如需重新运行请删除`LIb`文件夹并重新解压
+
+------
+
+**编译3.13以前版本时**：
+
+- 会没有`_pyrepl`库，因此不用修改`Lib/_pyrepl/__main.py__`，并且不用运行`"PCbuild/amd64/_freeze_module.exe _pyrepl" ./Lib/_pyrepl/__main__.py ./Python/frozen_modules/_pyrepl.h`
+
+- 第二次编译静态链接版本时可能会提示找不到getpath.h，你可以在第一次成功编译的`PCbuild/obj/_freeze_module`文件夹中找到`getpath.g.h`，重命名为`getpath.h`后放到`Python/frozen_modules/`文件夹中即可
