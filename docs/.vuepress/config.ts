@@ -5,7 +5,7 @@ import { googleAnalyticsPlugin } from '@vuepress/plugin-google-analytics'
 export default defineUserConfig({
   base: '/',
   lang: 'zh-CN',
-  title: 'xqy2006',
+  title: 'xqy2006\'s blog',
   description: 'xqy2006&#x27;s blog',
   plugins: [
     googleAnalyticsPlugin({
