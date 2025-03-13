@@ -1084,7 +1084,7 @@ if __name__ == '__main__':
 ```powershell
 python ./Tools/build/freeze_modules.py --step=0
 python ./Tools/build/freeze_modules.py --step=1
-"PCbuild/amd64/_freeze_module.exe _pyrepl" ./Lib/_pyrepl/__main__.py ./Python/frozen_modules/_pyrepl.h
+"PCbuild/amd64/_freeze_module.exe" _pyrepl ./Lib/_pyrepl/__main__.py ./Python/frozen_modules/_pyrepl.h
 ```
 
 回到VS，选择`Python`项目，右键生成，生成完后会报很多错，不用理会，此时`amd64`文件夹下已经生成可单文件运行的`python.exe`，包含了标准库，如果还需拓展库的话，可以在`python.exe`的同文件夹下防止`python313.zip`，zip中压缩库文件（也可以在运行`python ./Tools/build/freeze_modules.py --step=0`之前将这些库放置到源码的Lib目录下进行freeze）
