@@ -1,5 +1,5 @@
 ---
-title: Typora破解补丁成品（理论支持全版本）
+title: Typora1.10.8破解补丁成品
 createTime: 2025/07/02 04:18:44
 permalink: /article/3aoxkiaf/
 ---
@@ -21,12 +21,12 @@ permalink: /article/3aoxkiaf/
 
 ### 三、注册
 
-注册机：
+注册机（这里用的iframe，自动复制功能会报错，请手动复制激活码）：
 
-<iframe height='420' weight='525' src='https://xqy2006.github.io/typora-keygen'></iframe>
+<iframe height='1000' width=100% src='https://xqy2006.github.io/typora-keygen'></iframe>
 
 打开Typora，使用离线激活，复制机器码到注册机，邮箱和序列号可根据喜好填写，生成注册码并复制到软件中即可
 
 ![image-20250622183148796](Typora_crack_image/20250622232648.png)
 
-<iframe height='420' weight='525' src='https://xqy2006.github.io/dist-pages/license.html?dayRemains=15&index=0&hasActivated=true&email=This_is_my_Email&license=This_is_my_License_Code&lang=zh-Hans&needLicense=false&type=1&os=win'></iframe>
+<iframe height='420' width=100% src='https://xqy2006.github.io/dist-pages/license.html?dayRemains=15&index=0&hasActivated=true&email=This_is_my_Email&license=This_is_my_License_Code&lang=zh-Hans&needLicense=false&type=1&os=win'></iframe>
