@@ -1,5 +1,5 @@
 ---
-title: Typora1.10.8破解补丁成品
+title: Typora 1.10.8破解补丁成品
 createTime: 2025/07/02 04:18:44
 permalink: /article/3aoxkiaf/
 ---
@@ -21,7 +21,7 @@ permalink: /article/3aoxkiaf/
 
 ### 三、注册
 
-注册机（这里用的iframe，自动复制功能会报错，请手动复制激活码）：
+注册机（这里用的iframe，自动复制功能可能会报错，请手动复制激活码）：
 
 <iframe height='1000' width=100% src='https://xqy2006.github.io/typora-keygen'></iframe>
 
