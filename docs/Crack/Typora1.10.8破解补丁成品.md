@@ -21,10 +21,12 @@ permalink: /article/3aoxkiaf/
 
 ### 三、注册
 
-下载[注册机](/KeyGen_Typora.exe)
+注册机：
 
-![image-20250702042903241](Typora_crack_image/image-20250702042903241.png)
+<iframe height='420' weight='525' src='https://xqy2006.github.io/typora-keygen'></iframe>
 
 打开Typora，使用离线激活，复制机器码到注册机，邮箱和序列号可根据喜好填写，生成注册码并复制到软件中即可
 
 ![image-20250622183148796](Typora_crack_image/20250622232648.png)
+
+<iframe height='420' weight='525' src='https://xqy2006.github.io/dist-pages/license.html?dayRemains=15&index=0&hasActivated=true&email=This_is_my_Email&license=This_is_my_License_Code&lang=zh-Hans&needLicense=false&type=1&os=win'></iframe>
