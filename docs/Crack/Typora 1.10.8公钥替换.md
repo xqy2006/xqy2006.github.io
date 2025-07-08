@@ -313,3 +313,10 @@ LABEL_11:
 后续编写补丁，注册机就不再赘述了（记得patch掉网验）
 
 ![image-20250622183148796](Typora_crack_image/20250622232648.png)
+
+
+
+------
+
+补充：
+网络验证可在`electron::api::SimpleURLLoaderWrapper::Create`函数中捕获到url
