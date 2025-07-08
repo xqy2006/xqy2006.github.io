@@ -6,20 +6,13 @@ permalink: /article/3aoxkiaf/
 
 > 本文根据[Typora 1.10.8公钥替换](/article/p4u3p08j/)原理制作补丁
 
-### 一、添加HOST
+目前适用于1.10.X，只要作者没有升级electron版本（32.1.2）即可继续使用
 
-将下面两行添加到C:\Windows\System32\drivers\etc\hosts
-
-```
-127.0.0.1 dian.typora.com.cn
-127.0.0.1 store.typora.io
-```
-
-### 二、安装补丁
+### 一、安装补丁
 
 下载[DWrite.dll](/DWrite.dll)，放在Typora安装目录下
 
-### 三、注册
+### 二、注册
 
 注册机（这里用的iframe，自动复制功能可能会报错，请手动复制激活码）：
 
