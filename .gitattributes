@@ -1,4 +1,4 @@
-* text eol=lf
+#* text eol=lf
 *.txt text eol=crlf
 
 *.png binary
@@ -8,7 +8,8 @@
 *.tff binary
 *.woff binary
 *.woff2 binary
-* text=auto eol=lf
+
+
 *.exe      binary
 *.dll      binary
 *.dll.mui  binary
