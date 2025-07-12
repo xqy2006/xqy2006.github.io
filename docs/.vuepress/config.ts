@@ -20,17 +20,16 @@ export default defineUserConfig({
   bundler: viteBundler({
     viteOptions: {
       assetsInclude: [
-        // 确保这里包含了所有您需要处理的文件类型
-        '**/*.exe',
-        '**/*.dll',
-        '**/*.dll.mui',
-        '**/*.msi',
-        '**/*.zip',
-        '**/*.7z',
-        '**/*.rar',
-        '**/*.tar.gz',
-        '**/*.tar.xz',
-        '**/*.tar.bz2'
+        '**/*.exe', '**/*.EXE', // 添加大写
+        '**/*.dll', '**/*.DLL', // 添加大写
+        '**/*.dll.mui', '**/*.DLL.MUI', // 添加大写
+        '**/*.msi', '**/*.MSI', // 添加大写
+        '**/*.zip', '**/*.ZIP',
+        '**/*.7z', '**/*.7Z',
+        '**/*.rar', '**/*.RAR',
+        '**/*.tar.gz', '**/*.TAR.GZ',
+        '**/*.tar.xz', '**/*.TAR.XZ',
+        '**/*.tar.bz2', '**/*.TAR.BZ2'
       ],
     },
     // vuePluginOptions 是必需的，即使是空对象
