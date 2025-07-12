@@ -10,7 +10,7 @@ permalink: /article/3aoxkiaf/
 
 ### 一、安装补丁
 
-下载[DWrite.dll](/DWrite.zip)，放在Typora安装目录下
+下载[DWrite.dll](/DWrite.dll)，放在Typora安装目录下
 
 ### 二、注册
 

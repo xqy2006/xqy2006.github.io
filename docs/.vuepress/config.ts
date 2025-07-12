@@ -12,7 +12,15 @@ export default defineUserConfig({
       id: "G-836CT2PZWM",
     }),
   ],
-
+  bundlerConfig: {
+    viteOptions: {
+      assetsInclude: [
+        '**/*.exe', // 匹配所有 .exe 文件
+        '**/*.dll', // 匹配所有 .dll 文件
+        // 在这里添加其他需要原样复制的文件类型
+      ],
+    },
+  },
   head: [
     // 配置站点图标
     ['link', { rel: 'icon', type: 'image/png', href: 'https://theme-plume.vuejs.press/favicon-32x32.png' }],
