@@ -19,8 +19,21 @@ export default defineUserConfig({
 
   bundler: viteBundler({
     viteOptions: {
-      assetsInclude: ['**/*.exe',"**/*.dll","**/*.dll.mui","**/*.msi","**/*.zip","**/*.7z","**/*.rar","**/*.tar.gz","**/*.tar.xz","**/*.tar.bz2"],
+      assetsInclude: [
+        // 确保这里包含了所有您需要处理的文件类型
+        '**/*.exe',
+        '**/*.dll',
+        '**/*.dll.mui',
+        '**/*.msi',
+        '**/*.zip',
+        '**/*.7z',
+        '**/*.rar',
+        '**/*.tar.gz',
+        '**/*.tar.xz',
+        '**/*.tar.bz2'
+      ],
     },
+    // vuePluginOptions 是必需的，即使是空对象
     vuePluginOptions: {},
   }),
   shouldPrefetch: false, // 站点较大，页面数量较多时，不建议启用
