@@ -9,7 +9,6 @@
 *.woff binary
 *.woff2 binary
 
-
 *.exe      binary
 *.dll      binary
 *.dll.mui  binary
