@@ -1620,15 +1620,15 @@ uploadRecord: function(t, e) {
 
 丢给ai，可以得知文件内容为`json`数组，每个`json`的结构如下：
 
-- **`a` **: 纬度 (latitude) - `a` 变量对应 `r.latitude`
-- **`o` **: 经度 (longitude) - `s` 变量对应 `r.longitude`
-- **`s` **: 速度 (speed) - `c` 变量对应 `r.speed`
-- **`p` **: 暂停标记 - `o.isPause ? 1 : null`
-- **`b` **: 距离 - `parseInt(o.distance)` 当前总距离（整数，米）
-- **`c` **: 配速 - `_` 变量，从代码看是 `(0, l.calcPace)(g / y)` 计算的配速
-- **`d` **: 描述信息 - `d` 变量对应 `r.desc`
-- **`e` **: 固定为 `null` - 可能预留字段
-- **`l` **: 信号丢失标记 - `v ? 1 : null`，`v` 对应 `r.lose`
+- `a` : 纬度 (latitude) - `a` 变量对应 `r.latitude`
+- `o` : 经度 (longitude) - `s` 变量对应 `r.longitude`
+- `s` : 速度 (speed) - `c` 变量对应 `r.speed`
+- `p` : 暂停标记 - `o.isPause ? 1 : null`
+- `b` : 距离 - `parseInt(o.distance)` 当前总距离（整数，米）
+- `c` : 配速 - `_` 变量，从代码看是 `(0, l.calcPace)(g / y)` 计算的配速
+- `d` : 描述信息 - `d` 变量对应 `r.desc`
+- `e` : 固定为 `null` - 可能预留字段
+- `l` : 信号丢失标记 - `v ? 1 : null`，`v` 对应 `r.lose`
 
 
 
