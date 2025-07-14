@@ -107,7 +107,7 @@ uploadRecord: function(t, e) {
 },
 ```
 
-注意到case4，先将对象转化为字符串然后调用AES加密，最后调用`createTxt`，这应该就算轨迹文件了，那么文件加密前内容应该就是`s.file`，搜索`file:`可以找到有关轨迹文件内容生成的全部代码：
+注意到case4，先将对象转化为字符串，然后调用AES加密，最后调用`createTxt`，这应该就是轨迹文件了，那么文件加密前内容应该就是`s.file`，搜索`file:`可以找到有关轨迹文件内容生成的全部代码：
 
 ```javascript
 "1a1e": function(t, e, r) {
