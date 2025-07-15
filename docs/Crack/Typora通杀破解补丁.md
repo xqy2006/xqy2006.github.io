@@ -1,5 +1,5 @@
 ---
-title: Typora 1.10.8破解补丁成品
+title: Typora通杀破解补丁
 createTime: 2025/07/02 04:18:44
 permalink: /article/3aoxkiaf/
 ---
