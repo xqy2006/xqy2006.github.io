@@ -6,11 +6,15 @@ permalink: /article/3aoxkiaf/
 
 > 本文根据[Typora 1.10.8公钥替换](/article/p4u3p08j/)原理制作补丁
 
-目前适用于1.10.X，只要作者没有升级electron版本（32.1.2）即可继续使用
+补丁理论上支持自2022年2月以来所有Typora版本
+
+补丁会自动更新，如果因Typora版本更新导致补丁失效，可以尝试重新在这里下载
+
+若重新下载仍失效，请告知我
 
 ### 一、安装补丁
 
-下载[DWrite.dll](/DWrite.dll)，放在Typora安装目录下
+下载[DWrite.dll](https://typora.xuqinyang.top/DWrite.dll)，放在Typora安装目录下
 
 ### 二、注册
 
