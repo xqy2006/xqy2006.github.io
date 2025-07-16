@@ -5,6 +5,8 @@ permalink: /article/p4u3p08j/
 ---
 # Typora 1.10.8公钥替换
 
+成品见[Typora通杀破解补丁](/article/3aoxkiaf/)
+
 在最新版本中的Typora中，解包app.asar会发现软件使用了node vm将js编译成了jsc，在之前的版本中，分析atom.js可以得知Typora的激活实际上就是一个简单RSA公钥解密，只要patch了公钥就可以编写注册机进行离线激活，然而jsc中并没有简单的将公钥作为字符串进行储存（猜测是使用数组进行了解密），而分析jsc机器码又十分困难（需要自行编译定制版v8），因此可以通过native层进行公钥替换，这样不管开发者如何在js层上进行防护，都无法封堵该方法（除非定制node）
 
 ---
