@@ -14,13 +14,13 @@ permalink: /article/3aoxkiaf/
 
 ### 一、安装补丁
 
-下载[DWrite.dll](https://typora.xuqinyang.top/DWrite.dll)，放在Typora安装目录下
+下载[DWrite.dll](https://typora.xqyqx.cn/DWrite.dll)，放在Typora安装目录下
 
 ### 二、注册
 
 注册机（这里用的iframe，自动复制功能可能会报错，请手动复制激活码）：
 
-<iframe height='1000' width=100% src='https://typora.xuqinyang.top/'></iframe>
+<iframe height='1000' width=100% src='https://typora.xqyqx.cn/'></iframe>
 
 打开Typora，使用离线激活，复制机器码到注册机，邮箱和序列号可根据喜好填写，生成注册码并复制到软件中即可
 
