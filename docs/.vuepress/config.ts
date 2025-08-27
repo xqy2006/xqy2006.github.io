@@ -192,9 +192,22 @@ export default defineUserConfig({
        * 评论 comments
        * @see https://theme-plume.vuejs.press/guide/features/comments/
        */
-      // comment: {
-      //   provider: '', // "Artalk" | "Giscus" | "Twikoo" | "Waline"
-      //   comment: true,
+       comment: {
+        provider: 'Giscus', // "Artalk" | "Giscus" | "Twikoo" | "Waline"
+        comment: true,
+        repo:"xqy2006/discus",
+        repoId:"R_kgDOPlJhIA",
+        category:"Announcements",
+        categoryId:"DIC_kwDOPlJhIM4CuqUD",
+        mapping:"pathname",
+        strict:"0",
+        reactionsEnabled:"1",
+        emitMetadata:"1",
+        inputPosition:"top",
+        theme:"preferred_color_scheme",
+        lang:"zh-CN",
+        loading:"lazy",
+        crossorigin:"anonymous"
       //   repo: '',
       //   repoId: '',
       //   category: '',
@@ -202,7 +215,7 @@ export default defineUserConfig({
       //   mapping: 'pathname',
       //   reactionsEnabled: true,
       //   inputPosition: 'top',
-      // },
+       },
     },
 
     /**
