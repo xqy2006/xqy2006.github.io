@@ -4,7 +4,9 @@ createTime: 2025/08/27 20:36:00
 permalink: /article/w3cmceab/
 ---
 
-最近在研究Typora的时候需要分析被bytenode加密的jsc文件，如今大多数electron架构的项目为了保护js代码都使用bytenode将js编译成了jsc（例如qq，从major.node中可以提取出jsc，分析一下可以找到一些有趣的东西），而网上的教程和已有的工具（**[suleram/View8](https://github.com/suleram/View8)**）只支持v12.0.1版本以前的v8引擎，之后v8引擎的api发生了较大的改动，为此我编写了下面的项目，提供了12.0.1版本以来所有被node和electron使用过的v8：
+最近在研究Typora的时候需要分析被bytenode加密的jsc文件，如今大多数electron架构的项目为了保护js代码都使用bytenode将js编译成了jsc（例如qq，从major.node中可以提取出jsc，分析一下可以找到一些有趣的东西），而网上的教程和已有的工具（**[suleram/View8](https://github.com/suleram/View8)**）只支持v12.0.1版本以前的v8引擎，之后v8引擎的api发生了较大的改动
+
+对此我编写了下面的项目，提供了12.0.1版本以来所有被node和electron使用过的patched v8，可以将jsc字节码转换为可读的js代码：
 
 [xqy2006/jsc2js](https://github.com/xqy2006/jsc2js)
 
