@@ -18,7 +18,7 @@ permalink: /article/w3cmceab/
 
 
 
-有了工具，那也应该有些题目来练手，我出了一道：[ez_jsc](/ez_jsc.zip)
+有了工具，那也应该有些题目来练手，我出了一道：[ez_jsc](/ez_jsc.zip)（如果下载太慢，可以从这里下载：[蓝奏云](https://wwri.lanzouo.com/iHP0434op6oh)）
 
 欢迎在评论中分享你的解题过程
 
