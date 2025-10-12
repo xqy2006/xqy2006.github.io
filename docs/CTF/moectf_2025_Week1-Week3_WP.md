@@ -3,17 +3,17 @@ title: moectf2025 Week1-Week3 WP
 createTime: 2025/10/12 12:23:38
 permalink: /article/mr82j248/
 ---
-# misc
+## misc
 
-## Rush
+### Rush
 
 gif动图，抽帧第12帧有二维码但缺角，用ppt补全第三个角扫码即可
 
-## ez_LSB
+### ez_LSB
 
 丢进StegSolve，勾上red通道即可
 
-## ez_锟斤拷????
+### ez_锟斤拷????
 
 exp:
 
@@ -42,27 +42,27 @@ flag_half = full_to_half(flag_full)
 print(flag_half)
 ```
 
-## SSTV
+### SSTV
 
 用RX-SSTV，直接播放音频使用内录作为麦克风即可解析为图像，读取flag
 
-## encrypted_pdf
+### encrypted_pdf
 
 hashcat爆破密码为qwe123，flag藏在图片后，选中复制即可
 
-## 捂住一只耳
+### 捂住一只耳
 
 用Audacity打开，其中一个声道有摩斯密码，读取即为flag
 
-## Enchantment
+### Enchantment
 
 用Wireshark打开，发现里面有png文件传输，dump出来发现图中有奇怪的文字，网上搜索得知为标准银河字母加密，对照写出flag
 
-## ez_ssl
+### ez_ssl
 
 在http请求中可以发现sslkey.log，导入Wireshark在http请求中找到一个zip，zip注释中说密码是7位数字，爆破即可
 
-## ez_png
+### ez_png
 
 最后一个idat很短，发现zlib文件头，提取出来解压即可
 
@@ -78,7 +78,7 @@ print(result)
 
 ```
 
-## 万里挑一
+### 万里挑一
 
 先写个脚本生成字典：
 
@@ -201,9 +201,9 @@ flag.zip中有明文.exe，是pe文件，头是固定的，使用bkcrack明文�
 
 
 
-# pwn
+## pwn
 
-## ez_u64
+### ez_u64
 
 数据转换
 
@@ -221,7 +221,7 @@ p.interactive()
 
 ```
 
-## EZtext
+### EZtext
 
 简单栈溢出覆盖返回地址
 
@@ -243,7 +243,7 @@ p.interactive()
 
 ```
 
-## ezshellcode
+### ezshellcode
 
 先把内存设置为可读可写可执行，然后发shellcode即可
 
@@ -269,7 +269,7 @@ io.sendline(shellcode)
 io.interactive()
 ```
 
-## find it
+### find it
 
 问答题
 
@@ -283,7 +283,7 @@ What is its fd?
 moectf{******}
 ```
 
-## 认识libc
+### 认识libc
 
 ezlibc青春版，已经执行过printf，无需二次返回main
 
@@ -325,7 +325,7 @@ io.sendline(payload)
 io.interactive()
 ```
 
-## ezpivot
+### ezpivot
 
 栈迁移
 
@@ -377,7 +377,7 @@ p.send(payload2_pivot)
 p.interactive()
 ```
 
-## fmt
+### fmt
 
 格式化字符串漏洞，这里懒得本地调试确定偏移了，直接远程暴力尝试
 
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
 ```
 
-## randomlock
+### randomlock
 
 分析二进制可知seed恒为1，c++生成一串即可
 
@@ -512,7 +512,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## str_check
+### str_check
 
 栈溢出覆盖返回地址
 
@@ -536,7 +536,7 @@ p.interactive()
 
 ```
 
-## syslock
+### syslock
 
 lose函数中存在syscall，构造rop调用该syscall即可
 
@@ -601,7 +601,7 @@ if __name__ == "__main__":
 
 ```
 
-## xdulaker
+### xdulaker
 
 调用photo时溢出覆盖栈上内容使得laker函数校验通过，构造ROP进入backdoor即可
 
@@ -647,7 +647,7 @@ p.sendline(payload_for_laker)
 p.interactive()
 ```
 
-## eazylibc
+### eazylibc
 
 先patchelf使本地二进制使用题目给的libc
 
@@ -713,7 +713,7 @@ io.send(payload3)
 io.interactive()
 ```
 
-## fmt_S
+### fmt_S
 
 每次talk会将flag^1，在bss上查看flag紧邻atk，只要在读取atk时输入长度为8，my_read就可以覆盖flag为0，这样保证我们有3次输入机会
 
@@ -761,9 +761,9 @@ io.interactive()
 
 
 
-# crypto
+## crypto
 
-## ez_DES
+### ez_DES
 
 key有三字节未知，爆破即可
 
@@ -791,7 +791,7 @@ for suffix_chars in itertools.product(characters, repeat=3):
         continue
 ```
 
-## baby_next
+### baby_next
 
 由于q是p的后114514个素数，因此p，q应该都很接近平方根，尝试平方根附近的素数即可
 
@@ -832,7 +832,7 @@ print(f"Flag: {flag.decode('utf-8')}")
 
 ```
 
-## ezBSGS
+### ezBSGS
 
 Baby-Step Giant-Step
 
@@ -873,7 +873,7 @@ if __name__ == "__main__":
 
 ```
 
-## ez_square
+### ez_square
 
 完全平方公式，然后得到p-q，p+q，然后解出p，q
 
@@ -907,7 +907,7 @@ print(f"Flag: {flag.decode('utf-8')}")
 
 ```
 
-## ezAES
+### ezAES
 
 ```python
 rc = [0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0x78, 0x89, 0x9a, 0xab, 0xbc, 0xcd, 0xde, 0xef,0xf1]
@@ -1016,7 +1016,7 @@ if __name__ == '__main__':
 
 ```
 
-## ezlegendre
+### ezlegendre
 
 ```python
 from Crypto.Util.number import long_to_bytes
@@ -1158,7 +1158,7 @@ print(f"Flag: {flag_bytes.decode('utf-8')}")
 
 ```
 
-## happyRSA
+### happyRSA
 
 ```python
 from Crypto.Util.number import long_to_bytes
@@ -1203,7 +1203,7 @@ print(f"Flag: {flag.decode()}")
 
 ```
 
-## ezHalfGCD
+### ezHalfGCD
 
 ```python
 import gmpy2
@@ -1335,7 +1335,7 @@ if not flag_found:
 
 ```
 
-## Ledengre_revenge
+### Ledengre_revenge
 
 10轮加密，用了aes，可以写出逆，注意索引变换
 
@@ -1491,21 +1491,21 @@ for r in candidates:
 
 
 
-# reverse
+## reverse
 
-## speed
+### speed
 
 动态调试在creatwindow下断点，单步调试，flag在window上，照抄即可
 
-## base
+### base
 
 标准base64，直接解码即可
 
-## catch
+### catch
 
 nop掉exception即可
 
-## upx
+### upx
 
 upx脱壳，简单异或加密，注意输入的最后是换行符，因此可以倒推：
 
@@ -1529,7 +1529,7 @@ print("Flag:", flag)
 
 ```
 
-## ez3
+### ez3
 
 本来爆破出来了一个，但是交上去不对，后来才发现有多解，于是把每个位置所有可能值都打印出来看看哪个符合flag格式
 
@@ -1577,7 +1577,7 @@ if __name__ == '__main__':
 
 ```
 
-## flower
+### flower
 
 只有一句需要处理的花指令，je，jne相当于必定跳转，于是下面导致静态分析出问题的jmp可以直接nop掉，之后分析算法，发现给的key解出来是乱码，猜测会修改key，由于key只有一字节，爆破即可
 
@@ -1606,7 +1606,7 @@ if __name__ == '__main__':
 
 ```
 
-## A cup of tea
+### A cup of tea
 
 tea加密
 
@@ -1642,7 +1642,7 @@ print(decrypted_flag.decode('utf-8').strip('\x00'))
 
 ```
 
-## ezpy
+### ezpy
 
 丢给PyLingual，可得py源码：
 
@@ -1671,7 +1671,7 @@ if a != 1:
 
 凯撒密码，shift为114514，cyberchef一把梭
 
-## mazegame
+### mazegame
 
 迷宫题，能直接提取字符串迷宫，bfs即可（所以为什么flag不对路径做一下哈希，也太长了吧）
 
@@ -1770,7 +1770,7 @@ if __name__ == '__main__':
 
 ```
 
-## upx_revenge
+### upx_revenge
 
 附件中的1.exe打不开，用cff加载发现file size比pe size少了4byte，用ida打开发现start函数前面4个push被吞了，所以缺失的4字节在upx0区段前，观察upx头，有版本号`4.24`但是没有魔数`UPX!`，并且`4.24`后紧跟的`0D 24 02 08`是upx压缩方法，所以缺失的4字节正好是`UPX!`，插入`UPX!`保存，能成功`upx -d`，拖进ida，发现是base64+异或，直接解即可
 
@@ -1787,7 +1787,7 @@ print("bytes:", plain)
 
 ```
 
-## Two cups of tea
+### Two cups of tea
 
 xtea+xxtea
 
@@ -1882,9 +1882,9 @@ except UnicodeDecodeError:
 
 
 
-# web
+## web
 
-## **08 第八章 天衍真言，星图显圣**
+### **08 第八章 天衍真言，星图显圣**
 
 这里用的是盲注，一开始被大小写坑了，sql字符比较一般不区分大小写......
 
@@ -1951,6 +1951,6 @@ if __name__ == "__main__":
 
 ```
 
-## 待更......
+### 待更......
 
 > web太多太杂，不想写了
