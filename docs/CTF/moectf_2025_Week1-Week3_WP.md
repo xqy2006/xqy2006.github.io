@@ -950,7 +950,6 @@ s_box_inv = [
 	[0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d]
 ]
 
-# This is a direct copy of the original function to ensure the key schedule is identical.
 def key_expansion(grid):
     for i in range(10 * 4):
         r = grid[-4:]
@@ -992,19 +991,12 @@ def inv_mix_columns(grid):
         grid[i:i + 4] = inv_mix_column(grid[i:i + 4])
 
 def decrypt(block, expanded_key):
-    # Final round inverse
     add_round_key(block, expanded_key[-16:])
-    # NO inv_shift_rows call
     inv_sub_bytes(block)
-
-    # Main rounds inverse
     for i in range(9, 0, -1):
         add_round_key(block, expanded_key[i * 16 : (i+1) * 16])
         inv_mix_columns(block)
-        # NO inv_shift_rows call
         inv_sub_bytes(block)
-
-    # First round inverse
     add_round_key(block, expanded_key[:16])
     return block
 
