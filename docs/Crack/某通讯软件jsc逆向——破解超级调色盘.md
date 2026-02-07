@@ -15,7 +15,7 @@ permalink: /article/f9696bda/
 
 jsc可以从major.node中提取出来，之后再通过我之前的项目[jsc2js](https://github.com/xqy2006/jsc2js/)，可以将所有jsc转换为可读的js：[qqnt.js](/qqnt.js)
 
-此外我还统计了其中出现中文的代码行：[utf8_strings.log](/utf8_strings.log)
+此外我还统计了其中出现中文的代码行：[utf8_strings.txt](/utf8_strings.txt)
 
 
 
