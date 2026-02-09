@@ -202,20 +202,6 @@ function setThemeInfo(a0) {
 | `CE`          | Star0                     | r0 = 累加器                                    |
 | `CD`          | Star1                     | r1 = 累加器                                    |
 
-#### BytecodeArray 二进制布局
-
-在 `.jsc` 文件中，每个函数的字节码前有 39 字节的 BytecodeArray 头部。其中**紧邻字节码的 13 字节**格式为：
-
-```
-XX FF 00 00 00 PP 00 00 00 00 00 00 00
-```
-
-- `XX` — 函数相关的标记字节（不同函数不同，如 `67`、`6a` 等）
-- `FF` — frame_size（寄存器数 × 8）
-- `PP` — parameter_count（含 this）
-
-这 13 字节可作为搜索时的唯一性前缀。若仍有重复，可继续向前扩展（BytecodeArray 头部共 39 字节），直至特征码唯一。
-
 #### 寄存器编码
 
 | 编码 | 含义     |
@@ -503,3 +489,13 @@ offset 138: 85 0A 17 29    CreateObjectLiteral             ; ← 开始构建保
 ![](qq/1.png)
 
 ![](qq/2.png)
+
+
+
+------
+
+## 练习
+
+PS：谁在release中还塞开发工具，看了刚刚的分析，尝试把开发工具调出来吧
+
+![](qq/3.png)
