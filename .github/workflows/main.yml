@@ -22,8 +22,13 @@ jobs:
         with:
           # 选择要使用的 pnpm 版本
           version: 8
-          # 使用 pnpm 安装依赖
           run_install: false
+
+      - name: set mirror
+        run: pnpm config set registry https://registry.npmmirror.com
+
+      - name: install packages
+        run: pnpm install
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,13 +37,7 @@ jobs:
           node-version: 20
           # 缓存 pnpm 依赖
           cache: pnpm
-
-      - name: set mirror
-        run: pnpm config set registry https://registry.npmmirror.com
-
-      - name: install packages
-        run: pnpm install
-
+    
       # 运行构建脚本
       - name: Build VuePress site
         run: pnpm docs:build
