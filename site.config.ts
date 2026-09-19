@@ -4,8 +4,10 @@ export type { SiteConfig }
 
 export const site: SiteConfig = {
   title: "xqy2006's blog",
-  host: 'xuqinyang',
-  user: 'xqy2006',
+  // The prompt is decoration, not identification: it should not carry a name
+  // that is not already on the page.
+  host: 'blog',
+  user: 'guest',
   description: "xqy2006's blog",
   // The address the articles were indexed under. Both hosts serve the same
   // paths; this is the one the sitemap and the feed should name.
