@@ -5,11 +5,9 @@ reading interface is a simulated shell. Posts are Markdown in `content/posts/`;
 the build renders them to HTML at build time, so every article is a real page
 that reads fine with JavaScript off.
 
-Migrated from VuePress + vuepress-theme-plume. **Every article kept the URL it
-was published under** — `/article/<id>/` is still the canonical address of each
-post, it is what the sitemap lists, and nothing that was linked or indexed has
-moved. The same post also answers to `/posts/<id>/`, which points back at the
-permalink as canonical.
+Migrated from VuePress + vuepress-theme-plume. `/article/<id>/` is the
+permalink of every article, as it has always been; a post also answers to
+`/posts/<id>/`, which names the permalink as canonical.
 
 ## Writing
 
@@ -45,7 +43,37 @@ pushes it to the `gh-pages` branch for xqy2006.github.io. Both serve identical
 paths, so a link works on either.
 
 `site.config.ts` holds the title, the shell prompt, `origin` (the host the
-sitemap and feed name) and `base`.
+sitemap and feed name), `base` and the "powered by" line.
+
+## Tracking ProseOS
+
+ProseOS is vendored here rather than installed, so that Vercel and Actions
+build straight from this repository and never need credentials for another
+one. Updating is a copy:
+
+```sh
+node scripts/sync-framework.mjs ../proseos
+npm run build     # says whether site.config.ts still satisfies SiteConfig
+```
+
+`src/`, `build/`, `tests/`, `index.html`, the vite and tsconfig files and the
+fonts are replaced wholesale. `content/`, `site.config.ts` and everything else
+in `public/` are never touched.
+
+`.github/workflows/sync-framework.yml` does the same on demand and opens a
+pull request with the result, having run the build and the tests first. It
+needs a `PROSEOS_TOKEN` secret while ProseOS is private. To have it fire on
+every ProseOS commit rather than by hand, add a step to ProseOS's own workflow:
+
+```yaml
+- run: gh api repos/xqy2006/xqy2006.github.io/dispatches -f event_type=proseos-updated
+  env:
+    GH_TOKEN: ${{ secrets.BLOG_TOKEN }}
+```
+
+Nothing here is live: a static site is rebuilt, not reloaded. This is as close
+as it gets — a ProseOS commit, a pull request a minute later, and a deploy when
+it is merged.
 
 ## Large downloads
 

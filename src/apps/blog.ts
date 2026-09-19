@@ -15,6 +15,8 @@ export interface BlogOptions {
   onSelect?: (doc: Doc) => void
   /** `q`: hand the screen back to the shell. */
   onQuit: () => void
+  /** A "powered by" line under the listing, or null for none. */
+  credit?: { show: boolean; url: string } | null
   /** A tappable token under the masthead. */
   onCommand: (line: string) => void
 }
@@ -186,6 +188,16 @@ export class Blog implements Screen {
       onSelect: (doc) => this.opts.onSelect?.(doc),
     })
     this.body.appendChild(this.list.el)
+
+    const credit = this.opts.credit
+    if (credit?.show) {
+      const el = document.createElement('div')
+      el.className = 'blog-credit dim'
+      el.innerHTML = credit.url
+        ? `powered by <a href="${escapeHtml(credit.url)}" rel="noopener">ProseOS</a>`
+        : 'powered by ProseOS'
+      this.body.appendChild(el)
+    }
     this.updateStatus()
   }
 

@@ -1,0 +1,58 @@
+# Pull ProseOS into this repository and open a pull request with whatever
+# changed. Run it from the Actions tab, or have the ProseOS repository fire a
+# repository_dispatch at this one on every push to its main branch.
+#
+# Needs a secret named PROSEOS_TOKEN: a fine-grained token with read access to
+# the ProseOS repository, and contents + pull-requests write on this one.
+# If ProseOS is public, the checkout below works with the default token and
+# only the pull-request permission matters.
+name: sync framework
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [proseos-updated]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check out ProseOS
+        uses: actions/checkout@v5
+        with:
+          repository: xqy2006/proseos
+          token: ${{ secrets.PROSEOS_TOKEN }}
+          path: .proseos
+
+      - run: node scripts/sync-framework.mjs .proseos
+
+      - run: rm -rf .proseos
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # The build is the check that matters: a new required setting in
+      # SiteConfig fails here rather than on the next deploy.
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      - name: Open a pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PROSEOS_TOKEN }}
+          branch: sync/proseos
+          title: Sync ProseOS
+          commit-message: Sync ProseOS
+          body: |
+            Framework files updated from xqy2006/proseos.
+            The build and tests passed on this branch before the pull request was opened.
+          delete-branch: true

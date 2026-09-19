@@ -1,24 +1,6 @@
-export interface SiteConfig {
-  title: string
-  host: string
-  user: string
-  description: string
-  /**
-   * Where the site is served from, scheme and host, no trailing slash.
-   * The sitemap and the feed need absolute URLs; leave it empty and they fall
-   * back to site-relative ones, which crawlers are entitled to reject.
-   */
-  origin: string
-  base: string
-  lang: string
-  defaultTheme: string
-  /** Posts shown per page in every listing. Fixed, so a page number is stable. */
-  postsPerPage: number
-  media: { mode: 'hybrid' | 'real' | 'ascii'; colors: 16 | 256 | 'true'; columns: number }
-  ligatures: boolean
-  /** Python is loaded from a CDN on first use, never at boot. */
-  python: { version: string; cdn: string }
-}
+import type { SiteConfig } from './src/config.js'
+
+export type { SiteConfig }
 
 export const site: SiteConfig = {
   title: "xqy2006's blog",
@@ -34,6 +16,9 @@ export const site: SiteConfig = {
   postsPerPage: 8,
   media: { mode: 'hybrid', colors: 16, columns: 72 },
   ligatures: false,
+  // Plain text, not a link: proseos is a private repository, so a link would
+  // 404 for everyone but me. Fill in the URL once it is public.
+  credit: { show: true, url: '' },
   python: {
     version: '0.29.5',
     cdn: 'https://cdn.jsdelivr.net/pyodide',

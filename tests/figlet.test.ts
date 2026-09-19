@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { renderBanner, bannerWidth, boxed } from '../src/render/figlet.js'
+import { renderBanner, bannerWidth, boxed, unsupported } from '../src/render/figlet.js'
 import { width } from '../src/render/width.js'
 
 describe('block banner', () => {
@@ -53,5 +53,43 @@ describe('boxed', () => {
   it('drops a footer that would not fit', () => {
     const box = boxed(['x'], { footer: 'a very long footer indeed' })
     expect([...new Set(box.map(width))]).toHaveLength(1)
+  })
+})
+
+describe('marks a title actually contains', () => {
+  /**
+   * A possessive title came out as "XQY2006 S BLOG": the font had no
+   * apostrophe, and an unknown character renders as a blank, which is quiet
+   * enough to pass for deliberate.
+   */
+  it('draws an apostrophe rather than a gap', () => {
+    expect(renderBanner("'").join('')).toContain('█')
+    expect(renderBanner("'")).not.toEqual(renderBanner(' '))
+    expect(unsupported("xqy2006's blog")).toEqual([])
+  })
+
+  it('treats a curly quote as the same letter', () => {
+    expect(renderBanner('a’s')).toEqual(renderBanner("a's"))
+    expect(unsupported('xqy2006’s blog')).toEqual([])
+  })
+
+  it('treats an em dash as a hyphen', () => {
+    expect(renderBanner('a—b')).toEqual(renderBanner('a-b'))
+  })
+
+  it('covers the rest of the marks a title might carry', () => {
+    expect(unsupported('hi! what? yes: no; a&b (c) 1/2 x+y #tag *star* =end=')).toEqual([])
+  })
+
+  it('still refuses what it has no letters for', () => {
+    expect(unsupported('中文')).toEqual(['中', '文'])
+  })
+
+  it('keeps every glyph five rows of five cells', () => {
+    for (const ch of [...`abcxyz0189'"!?,:;&+=*#/()-._ `]) {
+      const rows = renderBanner(ch)
+      expect(rows).toHaveLength(5)
+      for (const r of rows) expect(r).toHaveLength(5)
+    }
   })
 })

@@ -114,6 +114,7 @@ const blog = new Blog(document.body, {
   onSelect: (doc) => warmBody(doc.slug),
   onPage: () => syncUrl(),
   onQuit: () => screens.clear(),
+  credit: site.credit,
   onCommand: (line) => {
     // A token naming a document opens it here; anything else runs in the
     // shell, which reveals itself if and when the command prints.

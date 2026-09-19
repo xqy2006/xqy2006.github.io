@@ -198,3 +198,11 @@
   .cl-keys { display: none; }
   .cl-taps { display: inline; }
 }
+
+/* A footer line, under the pager, out of the way of the listing. */
+.blog-credit {
+  margin: 1.2em 0 0.3em;
+  font-size: 0.9em;
+}
+.blog-credit a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.blog-credit a:hover { color: var(--accent); }
