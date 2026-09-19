@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "npm run docs:build",
   "installCommand": "npm install",
-  "outputDirectory": "docs/.vuepress/dist"
+  "buildCommand": "node scripts/fetch-framework.mjs && npm run build",
+  "outputDirectory": "dist"
 }

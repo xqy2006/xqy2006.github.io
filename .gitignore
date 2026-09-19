@@ -1,8 +1,17 @@
-**/node_modules
-
-docs/.vuepress/.cache
-docs/.vuepress/.temp
-docs/.vuepress/dist
-
+node_modules
+dist
+.cache
 .DS_Store
-*.log
+*.local
+
+# Fetched at build time from the private ProseOS repository, never committed:
+# this repository is public and the framework is not.
+# scripts/fetch-framework.mjs writes all of these.
+/.framework
+/src
+/build
+/index.html
+/vite.config.ts
+/tsconfig.json
+/public/fonts
+/public/favicon.svg
