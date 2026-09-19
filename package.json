@@ -1,29 +1,31 @@
 {
   "name": "xqy-2006",
   "type": "module",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "xqy2006's blog",
-  "author": "xuqinyang <2601928946@qq.com>",
+  "author": "xuqinyang",
   "license": "MIT",
+  "private": true,
   "engines": {
-    "node": "^18.20.0 || >=20.0.0"
+    "node": ">=20"
   },
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:dev-clean": "vuepress dev docs --clean-cache --clean-temp",
-    "docs:build": "vuepress build docs --clean-cache --clean-temp",
-    "docs:preview": "http-server docs/.vuepress/dist",
-    "vp-update": "npx vp-update"
+    "framework": "node scripts/fetch-framework.mjs",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/maple-mono": "^5.3.0",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.12.0",
+    "marked": "^18.0.13",
+    "string-width": "^8.2.2"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "2.0.0-rc.20",
-    "@vuepress/plugin-baidu-analytics": "^2.0.0-rc.82",
-    "@vuepress/plugin-google-analytics": "^2.0.0-rc.80",
-    "http-server": "^14.1.1",
-    "sass-embedded": "^1.85.1",
-    "typescript": "^5.7.3",
-    "vue": "^3.5.13",
-    "vuepress": "2.0.0-rc.20",
-    "vuepress-theme-plume": "1.0.0-rc.135"
+    "@types/node": "^26.6.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
   }
 }
