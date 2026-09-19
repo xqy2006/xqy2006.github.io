@@ -14,6 +14,11 @@ on:
   repository_dispatch:
     types: [proseos-updated]
 
+# The publish step pushes to gh-pages with GITHUB_TOKEN, which is read-only
+# unless the repository says otherwise or a workflow asks.
+permissions:
+  contents: write
+
 jobs:
   docs:
     runs-on: ubuntu-latest
@@ -33,6 +38,11 @@ jobs:
       - run: npm install
 
       - run: npm run build
+
+      # Pages builds this branch with Jekyll, which would skip any path
+      # beginning with an underscore. Nothing here does today; this keeps
+      # that from becoming a thing to remember.
+      - run: touch dist/.nojekyll
 
       # The framework is in the working tree at this point. Only dist/ is
       # published, and it carries no source maps.

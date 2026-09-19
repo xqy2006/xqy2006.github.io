@@ -54,6 +54,36 @@ scripts/           the framework fetcher
 Nothing here is ProseOS. `dist/` is built output with no source maps, so a
 deploy publishes the site and not the framework.
 
+## Setting it up
+
+Both builds fetch the framework from a private repository, so both need a
+token. Make one first: a fine-grained personal access token whose resource
+owner is `xqy2006`, whose repository access is **only** `xqy2006/proseos`, and
+whose only permission is **Contents: Read-only**. Note the expiry — when it
+lapses, builds stop.
+
+On GitHub, in this repository:
+
+1. Settings → Secrets and variables → Actions → **New repository secret**,
+   named `PROSEOS_TOKEN`.
+2. Settings → Pages: source stays **Deploy from a branch → gh-pages → /**.
+   Nothing to change.
+3. Merge this branch into `main`. Nothing deploys until then.
+
+On Vercel, in this project:
+
+1. Settings → Environment Variables → `PROSEOS_TOKEN`, for Production and
+   Preview. Without it the build stops with `PROSEOS_TOKEN is not set`.
+2. Settings → General → Framework Preset **Other**. `vercel.json` sets the
+   install, build and output settings and takes precedence, but a preset left
+   on VuePress is confusing to read later.
+3. Node.js 20 or newer, which is the default.
+
+Optional, to rebuild whenever ProseOS changes rather than only on a commit
+here: add a `BLOG_TOKEN` secret to the ProseOS repository — same kind of
+token, but pointed at this repository with **Contents: Read and write** — and
+the dispatch step shown below.
+
 ## Deploying
 
 Both hosts build the same way and serve identical paths, so a link works on
