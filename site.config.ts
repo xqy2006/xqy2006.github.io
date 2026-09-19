@@ -13,7 +13,8 @@ export const site: SiteConfig = {
   base: '/',
   lang: 'zh',
   defaultTheme: 'anthropic',
-  postsPerPage: 8,
+  // No ceiling: a tall window shows as many posts as it can hold.
+  postsPerPage: 'auto',
   media: { mode: 'hybrid', colors: 16, columns: 72 },
   ligatures: false,
   // Plain text, not a link: proseos is a private repository, so a link would
