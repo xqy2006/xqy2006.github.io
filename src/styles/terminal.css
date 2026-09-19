@@ -1,0 +1,251 @@
+.term-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--gutter);
+  padding-top: calc(var(--gutter) + env(safe-area-inset-top));
+  scroll-behavior: auto;
+  overscroll-behavior: contain;
+}
+
+.term-output { display: flow-root; }
+
+.term-line,
+.term-block {
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+}
+
+.term-block + .term-block,
+.term-line + .term-block { margin-top: 0; }
+
+.term-echo { margin-top: 0.6em; }
+.term-prompt-echo { color: var(--accent); }
+.term-echo-text { color: var(--fg); }
+
+.term-banner + .term-banner { margin-top: 0.35em; }
+
+/* prompt ------------------------------------------------------------------ */
+
+.term-form {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  margin-top: 0.4em;
+}
+
+.term-form.is-busy { opacity: 0.55; }
+
+.term-prompt {
+  color: var(--accent);
+  white-space: pre;
+  flex: none;
+}
+
+.term-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.term-mirror {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 1.6em;
+}
+
+/* The real input sits on top, invisible: native editing, IME and paste all
+   keep working, while the mirror draws a block cursor. */
+.term-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font: inherit;
+  outline: none;
+  resize: none;
+}
+
+/* iOS Safari zooms the whole page when a focused input is under 16px. The
+   input's own text is transparent — the mirror draws what you see — so this
+   costs nothing visually and stops the page jumping on every tap. */
+@media (pointer: coarse) {
+  .term-input { font-size: max(16px, 1em); }
+}
+
+.term-input::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); color: transparent; }
+
+.term-cursor {
+  display: inline-block;
+  min-width: 1ch;
+  background: var(--accent);
+  color: var(--bg);
+  animation: term-blink 1.1s steps(1) infinite;
+}
+
+.term-cursor.is-blurred {
+  background: transparent;
+  outline: 1px solid var(--dim);
+  color: inherit;
+  animation: none;
+}
+
+@keyframes term-blink { 50% { background: transparent; color: inherit; } }
+
+/* clickable tokens -------------------------------------------------------- */
+
+.tok {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid transparent;
+}
+
+.tok:hover, .tok:focus-visible {
+  border-bottom-color: currentColor;
+  outline: none;
+}
+
+.tok-doc { color: var(--ansi-12); }
+.tok-dir { color: var(--ansi-14); font-weight: 700; }
+.tok-cmd { color: var(--accent); }
+.tok-tag { color: var(--ansi-13); }
+
+.term-completions { color: var(--dim); }
+.term-completion { display: inline-block; margin-right: 2ch; }
+
+.term-list, .term-tree, .term-find, .term-help, .term-man, .term-themes, .term-neofetch, .term-history {
+  white-space: pre-wrap;
+}
+
+.term-neofetch { line-height: 1.35; }
+
+/* Only upright faces are loaded, so a UA-italic <i> would be synthesised into
+   a skewed oblique — which visibly shears block glyphs and colour swatches. */
+.term-block i { font-style: normal; }
+
+/* bottom strip: quick commands, or editing keys while typing --------------- */
+
+.term-bar {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex: none;
+}
+
+.term-chips,
+.term-keys {
+  display: flex;
+  gap: 0.5ch;
+  padding: 6px var(--gutter);
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.term-chips[hidden],
+.term-keys[hidden] { display: none; }
+
+.term-chips::-webkit-scrollbar,
+.term-keys::-webkit-scrollbar { display: none; }
+
+/* The editing strip supplies keys a soft keyboard lacks, so it is touch-only.
+   The chips are the shell's permanent way back to the blog and belong on every
+   device — they were hidden on touch back when the browse strip lived here,
+   which left a phone with no visible control at all once the greeting had
+   scrolled away. */
+@media (pointer: fine) {
+  .term-keys { display: none !important; }
+}
+
+.term-key {
+  font: inherit;
+  font-size: 0.9em;
+  white-space: nowrap;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 12px;
+  cursor: pointer;
+  /* Comfortable thumb target without making the strip tall. */
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.term-key:active { background: var(--surface); border-color: var(--accent); }
+
+.term-key-done,
+.term-key-kbd {
+  margin-left: auto;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.term-key-open { color: var(--accent); }
+
+.term-chip {
+  font: inherit;
+  font-size: 0.9em;
+  white-space: nowrap;
+  background: var(--bg);
+  color: var(--dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 12px;
+  cursor: pointer;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.term-chip:hover, .term-chip:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* scrollbars -------------------------------------------------------------- */
+
+.term-scroll { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.term-scroll::-webkit-scrollbar { width: 10px; }
+.term-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+.term-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* reverse history search: the prompt says what it is doing */
+.term-prompt.is-search { color: var(--ansi-11); }
+
+/* posting calendar */
+.term-cal { line-height: 1.35; }
+.cal-off { color: var(--border); }
+.cal-on {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+}
+.cal-on:hover, .cal-on:focus-visible { color: var(--fg); outline: none; }
+
+/* Nothing is clickable while a command is running: one at a time, and the
+   strip should look like it means it. */
+.app.is-busy .term-bar { opacity: 0.5; pointer-events: none; }
+
+/* A question is still running. The prompt returns when it is answered. */
+.term-form.is-choosing { display: none; }

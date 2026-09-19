@@ -1,0 +1,237 @@
+/* Full-screen applications ------------------------------------------------
+   Shared chrome for anything the shell launches: a title bar, a body, a
+   status line whose last slot always says where `q` goes, and — on touch —
+   a key strip, because a phone has no arrow keys. */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.screen[hidden] { display: none; }
+
+.screen-bar {
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  padding: 4px var(--gutter);
+  padding-top: calc(4px + env(safe-area-inset-top));
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex: none;
+}
+
+.screen-title {
+  color: var(--accent);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.screen-quit {
+  margin-left: auto;
+  font: inherit;
+  background: var(--bg);
+  color: var(--dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 1ch;
+  cursor: pointer;
+  flex: none;
+  white-space: nowrap;
+}
+
+.screen-quit:hover,
+.screen-quit:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+
+.screen-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--gutter);
+  outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.screen-reader .screen-body .md { margin: 0 auto; }
+
+.screen-status {
+  display: flex;
+  align-items: center;
+  gap: 2ch;
+  padding: 2px var(--gutter);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--dim);
+  font-size: 0.88em;
+  flex: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.screen-pos { color: var(--accent); }
+.screen-file { margin-left: auto; overflow: hidden; text-overflow: ellipsis; }
+
+/* The way out is never off-screen: the last slot always names it — and it
+   carries its own push to the right, because the neighbour that used to
+   provide it is hidden on a narrow window. */
+.screen-quit-hint {
+  color: var(--accent);
+  flex: none;
+  margin-left: auto;
+  padding-left: 2ch;
+  border-left: 1px solid var(--border);
+}
+
+.screen-file + .screen-quit-hint { margin-left: 0; }
+
+/* Exactly one way out per screen, or the same three words appear three times:
+   the key strip on touch, the status line on a pointer device. The reader has
+   no strip, so on touch it keeps the button in its bar. */
+.screen-quit { display: none; }
+
+@media (pointer: coarse) {
+  /* The blog is the only screen with a key strip; every other one keeps the
+     button in its bar, or a phone has no way out of it at all. */
+  .screen-reader .screen-quit,
+  .screen-repl .screen-quit,
+  .screen-editor .screen-quit { display: block; }
+  .screen-quit-hint { display: none; }
+}
+
+@media (max-width: 620px) {
+  .screen-keys, .screen-file { display: none; }
+}
+
+.screen-status { padding-bottom: 2px; }
+
+/* touch strip -------------------------------------------------------------- */
+
+.screen-strip {
+  display: flex;
+  gap: 0.5ch;
+  padding: 6px var(--gutter);
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.screen-strip::-webkit-scrollbar { display: none; }
+
+@media (pointer: fine) {
+  .screen-strip { display: none; }
+}
+
+.screen-key {
+  font: inherit;
+  font-size: 0.9em;
+  white-space: nowrap;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 12px;
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.screen-key:active { background: var(--surface); border-color: var(--accent); }
+.screen-key-open { color: var(--accent); }
+
+.screen-key-quit {
+  margin-left: auto;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* the blog application ----------------------------------------------------- */
+
+.blog-head { margin-bottom: 0.8em; }
+
+.blog-art {
+  margin: 0;
+  color: var(--accent);
+  line-height: 1.05;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.blog-tagline { margin-top: 0.2em; }
+.blog-tokens { margin-top: 0.2em; }
+.blog-tokens .tok + .tok { margin-left: 1ch; }
+
+@media (pointer: coarse) {
+  .blog-tokens { display: flex; flex-wrap: wrap; gap: 0 2ch; }
+  .blog-tokens .tok { min-height: 44px; display: inline-flex; align-items: center; }
+  .blog-tokens .tok + .tok { margin-left: 0; }
+}
+
+.screen-blog .pl { max-width: 78ch; }
+
+/* the editor ---------------------------------------------------------------
+   A textarea and nothing else: this is nano, not an IDE. */
+.screen-editor .screen-body { padding: 0; display: flex; }
+
+.ed-area {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  padding: var(--gutter);
+  font: inherit;
+  line-height: 1.5;
+  tab-size: 4;
+  background: var(--bg);
+  color: var(--fg);
+  white-space: pre;
+  overflow: auto;
+}
+
+.ed-area::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+
+@media (pointer: coarse) {
+  /* iOS zooms a focused input under 16px. */
+  .ed-area { font-size: max(16px, 1em); }
+}
+
+/* the python prompt --------------------------------------------------------
+   `q` is a Python name, so this screen quits on ^D and says so. */
+.screen-repl .screen-body { display: flex; flex-direction: column; }
+
+.repl-log { flex: 1; min-height: 0; overflow-y: auto; }
+.repl-out { white-space: pre-wrap; overflow-wrap: anywhere; }
+.repl-prompt { color: var(--accent); }
+
+.repl-line { display: flex; gap: 1ch; align-items: baseline; flex: none; padding-top: 0.2em; }
+
+.repl-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  caret-color: var(--accent);
+}
+
+.repl-input:disabled { opacity: 0.5; }
+
+@media (pointer: coarse) {
+  .repl-input { font-size: max(16px, 1em); }
+}

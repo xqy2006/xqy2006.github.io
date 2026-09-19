@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#FAF9F5" />
+    <meta name="description" content="A static blog that behaves like a shell." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- CJK faces: ~140 unicode-range shards. Loaded non-blocking, because a
+         Latin-only reader never needs any of them. -->
+    <link rel="stylesheet" href="/fonts/cn/faces.css" media="print"
+          onload="this.media='all';this.onload=null" />
+    <noscript><link rel="stylesheet" href="/fonts/cn/faces.css" /></noscript>
+    <link rel="alternate" type="application/rss+xml" title="feed" href="/feed.xml" />
+    <title>ProseOS</title>
+  </head>
+  <body>
+    <!-- Crawlers and readers without JavaScript get real prose here.
+         main.ts removes it once the terminal has booted. -->
+    <div id="prerender" class="prerender"><!--PROSEOS_PRERENDER--></div>
+    <main id="app" class="app" aria-label="terminal"></main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

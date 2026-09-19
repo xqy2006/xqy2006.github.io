@@ -1,0 +1,15 @@
+/* One family name, several faces. The Latin faces come from @fontsource;
+   fonts-cn.generated.css adds CJK faces under the same name, restricted by
+   unicode-range, so a Latin-only page never fetches a Chinese shard.
+   Until `npm run fonts` has run, the CJK stack below takes over — those
+   families are the common system monospace CJK faces, all of which keep the
+   2:1 cell ratio the layout depends on. */
+:root {
+  --font-mono:
+    'Maple Mono',
+    ui-monospace, SFMono-Regular, Menlo, Consolas,
+    'Sarasa Mono SC', 'Maple Mono CN', 'Noto Sans Mono CJK SC', 'Noto Sans Mono CJK TC',
+    'Source Han Mono SC', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'WenQuanYi Micro Hei Mono',
+    monospace;
+}

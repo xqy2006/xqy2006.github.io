@@ -1,0 +1,124 @@
+/* Colours are re-set at runtime by core/theme.ts; these defaults make the
+   pre-JS paint and the no-JS prerender look right. */
+:root {
+  --bg: #faf9f5;
+  --surface: #f0eee6;
+  --fg: #262625;
+  --dim: #6b6a64;
+  --accent: #d97757;
+  --border: #ddd9ce;
+
+  --ansi-0: #3d3d3a;  --ansi-1: #b0453a;  --ansi-2: #5f7a4a;  --ansi-3: #a8763e;
+  --ansi-4: #4e7a9b;  --ansi-5: #7d6490;  --ansi-6: #4c8079;  --ansi-7: #d8d3c6;
+  --ansi-8: #8a8880;  --ansi-9: #d97757;  --ansi-10: #7e9c63; --ansi-11: #c99a4e;
+  --ansi-12: #6e9cc0; --ansi-13: #a08cb4; --ansi-14: #6ba49c; --ansi-15: #faf9f5;
+
+  --gutter: 16px;
+  --radius: 4px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #191919; --surface: #262625; --fg: #f0eee6;
+    --dim: #8a8880; --border: #3a3a38;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+html.is-screen { overflow: hidden; }
+
+/* Added by main.ts once the terminal owns the page. All scrolling happens
+   inside .term-scroll or .screen-body, so the layout viewport must not scroll:
+   if it does, iOS shifts it to reveal the focused input and the key strip ends
+   up below the fold. Scoped to .js so the no-script prerender can still
+   scroll. */
+html.js,
+html.js body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 0.55rem + 0.75vw, 15px);
+  line-height: 1.6;
+  font-variant-ligatures: none;
+  -webkit-text-size-adjust: 100%;
+  overflow-wrap: anywhere;
+}
+
+:root[data-ligatures='on'] body { font-variant-ligatures: contextual; }
+
+/* The UA stylesheet forces `font-family: monospace` on these, which silently
+   replaces Maple Mono with the browser's generic mono — whose CJK advance is
+   1.66x its Latin one, not 2x. Every box table and code block would then come
+   out ragged. Inherit instead. */
+pre, code, kbd, samp, tt {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+
+a { color: var(--accent); }
+
+.app {
+  display: flex;
+  flex-direction: column;
+  /* --vh tracks the visual viewport, which is the only height that is correct
+     while a soft keyboard is open; 100dvh is the pre-script fallback. */
+  height: var(--vh, 100dvh);
+  max-width: 100vw;
+}
+
+/* Utility spans used by command output */
+.dim { color: var(--dim); }
+.accent { color: var(--accent); }
+.is-error { color: var(--ansi-1); }
+mark { background: color-mix(in srgb, var(--accent) 35%, transparent); color: inherit; }
+
+/* Palette classes: art cells and swatches reference the theme by index,
+   which is what lets a theme switch recolour them with no re-render. */
+.f0{color:var(--ansi-0)}   .f1{color:var(--ansi-1)}   .f2{color:var(--ansi-2)}
+.f3{color:var(--ansi-3)}   .f4{color:var(--ansi-4)}   .f5{color:var(--ansi-5)}
+.f6{color:var(--ansi-6)}   .f7{color:var(--ansi-7)}   .f8{color:var(--ansi-8)}
+.f9{color:var(--ansi-9)}   .f10{color:var(--ansi-10)} .f11{color:var(--ansi-11)}
+.f12{color:var(--ansi-12)} .f13{color:var(--ansi-13)} .f14{color:var(--ansi-14)}
+.f15{color:var(--ansi-15)}
+.b0{background:var(--ansi-0)}   .b1{background:var(--ansi-1)}   .b2{background:var(--ansi-2)}
+.b3{background:var(--ansi-3)}   .b4{background:var(--ansi-4)}   .b5{background:var(--ansi-5)}
+.b6{background:var(--ansi-6)}   .b7{background:var(--ansi-7)}   .b8{background:var(--ansi-8)}
+.b9{background:var(--ansi-9)}   .b10{background:var(--ansi-10)} .b11{background:var(--ansi-11)}
+.b12{background:var(--ansi-12)} .b13{background:var(--ansi-13)} .b14{background:var(--ansi-14)}
+.b15{background:var(--ansi-15)}
+
+.sw {
+  display: inline-block;
+  width: 1ch;
+  height: 1em;
+  background: currentColor;
+  vertical-align: -0.1em;
+}
+
+/* Shown only when JavaScript never runs. */
+.prerender {
+  max-width: 68ch;
+  margin: 0 auto;
+  padding: var(--gutter);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

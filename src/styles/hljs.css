@@ -1,0 +1,47 @@
+/* highlight.js mapped onto the sixteen ANSI slots rather than fixed hex, so
+   code recolours with `theme` exactly like everything else. */
+.hljs { color: var(--fg); background: transparent; }
+
+.hljs-comment,
+.hljs-quote          { color: var(--dim); font-style: italic; }
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-doctag,
+.hljs-name           { color: var(--ansi-13); }
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition       { color: var(--ansi-10); }
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-template-variable,
+.hljs-variable       { color: var(--ansi-11); }
+
+.hljs-title,
+.hljs-title.function_,
+.hljs-section,
+.hljs-selector-id    { color: var(--ansi-12); }
+
+.hljs-type,
+.hljs-class .hljs-title,
+.hljs-built_in,
+.hljs-builtin-name   { color: var(--ansi-14); }
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-property,
+.hljs-selector-class { color: var(--ansi-9); }
+
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-punctuation,
+.hljs-operator       { color: var(--dim); }
+
+.hljs-deletion       { color: var(--ansi-1); }
+.hljs-emphasis       { font-style: italic; }
+.hljs-strong         { font-weight: 700; }
+.hljs-link           { text-decoration: underline; }

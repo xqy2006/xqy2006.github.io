@@ -1,8 +1,9 @@
-**/node_modules
-
-docs/.vuepress/.cache
-docs/.vuepress/.temp
-docs/.vuepress/dist
-
+node_modules
+dist
+shots
+.cache
 .DS_Store
-*.log
+*.local
+# The CJK font shards ARE committed (see THIRD-PARTY.md): the 2:1 grid is the
+# whole point, and a fresh clone should not need a 134 MB download to get it.
+# What is not committed is the release archive `npm run fonts` downloads.

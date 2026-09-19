@@ -1,0 +1,200 @@
+/* Paginated post listing ---------------------------------------------------
+   A grid on a ch measure rather than space-padded text, so titles of any
+   length in any script line up in columns. When there are columns to spare
+   the title takes one and truncates; when there are not, the row folds in
+   two rather than shortening every title to fit. */
+
+.pl {
+  margin: 0.3em 0;
+  /* The same measure as an article: a listing stretched across a wide window
+     puts the tags an inch away from the title they belong to. */
+  max-width: 78ch;
+  /* The listing is as wide as the screen it was launched into, which is not
+     the window: a container query, not a viewport one. */
+  container-type: inline-size;
+}
+
+.pl-row {
+  display: grid;
+  grid-template-columns: 2ch 11ch minmax(0, 1fr) auto;
+  gap: 0 1ch;
+  align-items: baseline;
+  width: 100%;
+  padding: 2px 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.pl-mark { color: var(--accent); }
+.pl-date { color: var(--dim); }
+
+.pl-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pl-meta {
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Narrow: the date is worth eleven cells the title cannot spare, so the row
+   becomes two lines — the title on its own, the date and tags beneath it. The
+   title wraps here instead of truncating, because it now has the width to. */
+@container (max-width: 60ch) {
+  .pl-row {
+    /* The date column is 11ch, not max-content: the title spans it, and a
+       max-content track sized to the title would leave the tags nothing. */
+    grid-template-columns: 2ch 11ch minmax(0, 1fr);
+    grid-template-areas:
+      "mark title title"
+      ".    date  meta";
+    row-gap: 1px;
+    padding: 5px 0;
+  }
+
+  /* On touch the row centres its contents, which on a title that wraps would
+     leave the marker floating between the two lines instead of beside the
+     first one. */
+  .pl-mark { grid-area: mark; align-self: start; }
+  .pl-date { grid-area: date; }
+  .pl-meta { grid-area: meta; }
+
+  .pl-title {
+    grid-area: title;
+    white-space: normal;
+    overflow-wrap: break-word;
+    overflow: visible;
+  }
+}
+
+/* A gutter marker, not a filled row: a background block here would read as a
+   second cursor competing with the one at the prompt. */
+.pl-row.is-selected .pl-title {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pl-row:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+/* Demoted: another listing now owns the arrow keys. */
+.pl.is-stale .pl-mark { visibility: hidden; }
+.pl.is-stale .pl-date,
+.pl.is-stale .pl-meta { opacity: 0.7; }
+
+.pl-foot {
+  display: flex;
+  align-items: baseline;
+  gap: 2ch;
+  margin-top: 0.4em;
+  padding-top: 0.3em;
+  border-top: 1px solid var(--border);
+}
+
+.pl-nav {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+}
+
+.pl-count { color: var(--dim); }
+
+.pl-page {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.pl-page:hover:not([disabled]),
+.pl-page:focus-visible:not([disabled]) { border-bottom-color: currentColor; outline: none; }
+.pl-page[disabled] { color: var(--dim); opacity: 0.5; cursor: default; }
+
+.pl-empty { padding: 0.3em 0; }
+
+/* A finger is not a mouse pointer. At the desktop's density a row is 25px
+   tall with nothing between rows, which makes opening the wrong post easy —
+   and opening a post is the one thing this site is for. */
+@media (pointer: coarse) {
+  .pl-row {
+    min-height: 44px;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .pl-page { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+/* masthead ---------------------------------------------------------------- */
+
+.term-home + .term-home { margin-top: 0.3em; }
+
+.home-art {
+  color: var(--accent);
+  display: block;
+  line-height: 1.05;
+}
+
+/* A chooser in the transcript ---------------------------------------------
+   Same selection model as the post listing: a gutter marker rather than a
+   filled row, arrows and Enter, and a pointer that selects before it
+   commits. */
+
+.cl { margin: 0.2em 0; max-width: 78ch; }
+
+.cl-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  width: 100%;
+  padding: 1px 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.cl-mark { color: var(--accent); flex: none; }
+.cl-label { white-space: pre; }
+.cl-hint { color: var(--dim); }
+
+.cl-row.is-selected .cl-label { color: var(--accent); }
+.cl-row[disabled] { cursor: default; }
+.cl-row[disabled]:not(.is-selected) { opacity: 0.45; }
+.cl-row:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+.cl-foot { margin-top: 0.2em; }
+.cl-taps { display: none; }
+/* Escape is a key a phone does not have; the footer carries the way out. */
+.cl-cancel {
+  display: none;
+  font: inherit;
+  color: var(--dim);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-left: 0.6em;
+  padding: 0 0.8em;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+@media (pointer: coarse) {
+  .cl-row { min-height: 44px; align-items: center; }
+  .cl-cancel { display: inline-block; }
+  .cl-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.6em; }
+  .cl-keys { display: none; }
+  .cl-taps { display: inline; }
+}

@@ -1,0 +1,14 @@
+/* Latin faces only. The CJK shards are declared in public/fonts/cn/faces.css,
+   linked separately from index.html so they cache independently of the app CSS
+   and never bloat the first paint for a Latin-only reader. */
+@import '@fontsource/maple-mono/400.css';
+@import '@fontsource/maple-mono/700.css';
+
+@import './fonts.css';
+@import './base.css';
+@import './terminal.css';
+@import './postlist.css';
+@import './markdown.css';
+@import './media.css';
+@import './screen.css';
+@import './hljs.css';
