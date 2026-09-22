@@ -1,0 +1,1487 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#FAF9F5" />
+    <meta name="description" content="A static blog that behaves like a shell." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- CJK faces: ~140 unicode-range shards. Loaded non-blocking, because a
+         Latin-only reader never needs any of them. -->
+    <link rel="stylesheet" href="/fonts/cn/faces.css" media="print"
+          onload="this.media='all';this.onload=null" />
+    <noscript><link rel="stylesheet" href="/fonts/cn/faces.css" /></noscript>
+    <link rel="alternate" type="application/rss+xml" title="feed" href="/feed.xml" />
+    <title>棋类策略游戏设计与人机对战系统开发 · xqy2006's blog</title>
+    <meta name="description" content="### 规则设计 游戏灵感来源于一道中考模拟题： image-20250708154632038 这里说是2×2的正方形网格实际上可以看出3×3的点阵，共9个点可选（下文中所有的n都是对于点阵而非网格） 根据这道题目我重新设计了规则： 棋盘为14×14格点 两人依次在网格中画线段，线段的起点和终点均为格点 新画线段">
+    <link rel="canonical" href="https://blog.xuqinyang.top/article/56zn3lsn/">
+    <meta property="og:title" content="棋类策略游戏设计与人机对战系统开发">
+    <meta property="og:description" content="### 规则设计 游戏灵感来源于一道中考模拟题： image-20250708154632038 这里说是2×2的正方形网格实际上可以看出3×3的点阵，共9个点可选（下文中所有的n都是对于点阵而非网格） 根据这道题目我重新设计了规则： 棋盘为14×14格点 两人依次在网格中画线段，线段的起点和终点均为格点 新画线段">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2025-07-08">
+    <script type="module" crossorigin src="/assets/index-AbpnEZX5.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BOixYSLH.css">
+  </head>
+  <body>
+    <!-- Crawlers and readers without JavaScript get real prose here.
+         main.ts removes it once the terminal has booted. -->
+    <div id="prerender" class="prerender"><article class="md" data-slug="56zn3lsn"><h3 class="md-h md-h3" id="规则设计"><span class="md-hash" aria-hidden="true">### </span><span class="md-h-text">规则设计</span></h3>
+<p>游戏灵感来源于一道中考模拟题：
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/image-20250708154632038.png" data-name="image-20250708154632038.png" data-alt="image-20250708154632038"><img class="md-img" src="/img/Program/assets/image-20250708154632038.png" alt="image-20250708154632038" loading="lazy" decoding="async"><span class="md-caption">image-20250708154632038</span></span></p>
+<p>这里说是2×2的正方形网格实际上可以看出3×3的点阵，共9个点可选（下文中所有的n都是对于点阵而非网格）</p>
+<p>根据这道题目我重新设计了规则：</p>
+<ul class="md-list md-ul"><li class="md-li"><p>棋盘为14×14格点</p>
+</li>
+<li class="md-li"><p>两人依次在网格中画线段，线段的起点和终点均为格点</p>
+</li>
+<li class="md-li"><p>新画线段的起点为前一条线段的终点，且与任意已画出线段不能有其他公共点</p>
+</li>
+<li class="md-li"><p>当某人无法画出新的线段时，则另一人获胜</p>
+</li>
+<li class="md-li"><p><strong>能量限制：移动距离不能超过当前能量值</strong></p>
+</li>
+</ul>
+<p>为什么是14×14呢？首先相较于原题的3×3，我们显然需要增加棋盘大小以增强策略性，其次我们引入了新的规则：能量限制，这样是为了防止玩家画出超长线段直接分割棋盘，那么再大的棋盘也就没有意义了，我们没必要设置太大的棋盘，我们只需要控制每回合回复的能量的大小即可控制一局游戏的平均步数，鉴于我们需要使游戏能够在小屏幕（手机）上显示，太大的棋盘不方便操作，最后选定了n=14</p>
+<p>为了防止囤积能量然后仍然分割棋盘，因此应当鼓励花费能量，这里我们可以增加一个每回合能量衰减的机制，最终设计的能量计算公式为：
+$$
+E_{turn}=3+0.8E_{turn-1}
+$$</p>
+<h3 class="md-h md-h3" id="规则实现"><span class="md-hash" aria-hidden="true">### </span><span class="md-h-text">规则实现</span></h3>
+<p>那么接下来，我们可以着手将游戏规则实现出来，因为我们需要训练强化学习模型，因此我们可以先编写一个gym环境，然后暴露接口给模型进行训练，这里我们先构建一个符合当前游戏规则的gym环境：</p>
+<p>现在，我们需要思考给模型需要暴露一些什么信息，设置什么奖励提供给模型</p>
+<p>首先我们可以将游戏分为3个阶段：</p>
+<ul class="md-list md-ul"><li class="md-li">Phase 0：先手玩家选择起点</li>
+<li class="md-li">Phase 1：先手玩家选择终点</li>
+<li class="md-li">Phase 2：对弈</li>
+</ul>
+<blockquote class="md-quote"><p>其实这里Phase 1可以和Phase 2可以合并的，但是已经这么写了就先懒得改了</p>
+</blockquote>
+<p>我选择向模型暴露这些信息：</p>
+<ul class="md-list md-ul"><li class="md-li"><p>已用点&amp;当前点</p>
+</li>
+<li class="md-li"><p>双方能量 E₀、E₁</p>
+</li>
+<li class="md-li"><p>游戏阶段</p>
+</li>
+<li class="md-li"><p>回合数</p>
+</li>
+<li class="md-li"><p>线段状态</p>
+</li>
+</ul>
+<h4 class="md-h md-h4" id="线段状态压缩"><span class="md-hash" aria-hidden="true">#### </span><span class="md-h-text">线段状态压缩</span></h4>
+<p>如果直接使用一个n^2*n^2的掩码矩阵来记录线段状态的话，将会产生非常大的维度，因此我们需要将信息进行压缩，这里我将棋盘上的线段进行采样渲染，最后整个棋盘形成一张图，这十分有利于CNN学习图像特征，采样过程中我设置了衰减，以体现能量衰减和游戏进程，下面是一个示意图：</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/image-20250708161407550.png" data-name="image-20250708161407550.png" data-alt="image-20250708161407550"><img class="md-img" src="/img/Program/assets/image-20250708161407550.png" alt="image-20250708161407550" loading="lazy" decoding="async"><span class="md-caption">image-20250708161407550</span></span>
+<h3 class="md-h md-h3" id="奖励设置"><span class="md-hash" aria-hidden="true">### </span><span class="md-h-text">奖励设置</span></h3>
+<p>我们引入一个概念：一击必胜</p>
+<p>由于这个游戏一定会存在制胜的最后一步和导致失败的倒数第二步，因此我们对一击制胜的最后一步设置一个很大的奖励，将导致失败的倒数第二步设置惩罚（此外还可以继续往前追溯倒数第三步第四步进行奖励和惩罚，但是碍于训练模型时的CPU的性能瓶颈，因此目前并没有设置）</p>
+<p>此外，当当前步使得对手可活动空间减少时，我们也基于一个小奖励</p>
+<p>不暴露漏洞，找到对方的漏洞是这个游戏获胜的关键，因此我们不需要太多其它的奖励指标，最终的奖励设置如下：</p>
+<div class="md-table-wrap"><pre class="md-table">┌──────────┬─────────────────┬──────────────┐
+<span class="md-th">│ <strong>奖励类型</strong> │ <strong>计算方式</strong>        │ <strong>目的</strong>         │</span>
+├──────────┼─────────────────┼──────────────┤
+│ 空间压制 │ 1 -  对手自由度 │ 限制对手移动 │
+│ 漏洞惩罚 │ -3.0            │ 避免危险走法 │
+│ 制胜奖励 │ +3.0            │ 鼓励终结游戏 │
+└──────────┴─────────────────┴──────────────┘</pre></div>
+<p>基于上文所述，我们可以编写完整的<code class="md-code-inline">game_env.py</code>：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">576 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python"><span class="hljs-keyword">import</span> gymnasium <span class="hljs-keyword">as</span> gym
+<span class="hljs-keyword">import</span> math, random
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">from</span> gymnasium <span class="hljs-keyword">import</span> spaces
+<span class="hljs-keyword">import</span> collections
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">NoCrossLinesEnv</span>(gym.Env):
+    metadata = {<span class="hljs-string">&#x27;render_modes&#x27;</span>: [<span class="hljs-string">&#x27;human&#x27;</span>], <span class="hljs-string">&#x27;render_fps&#x27;</span>: <span class="hljs-number">4</span>}  <span class="hljs-comment"># 更新 metadata</span>
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, n=<span class="hljs-number">14</span>, m=<span class="hljs-number">3</span>, alpha=<span class="hljs-number">0.8</span>, Emax=<span class="hljs-number">12</span></span>):
+        
+        <span class="hljs-built_in">super</span>().__init__()
+        <span class="hljs-variable language_">self</span>.n, <span class="hljs-variable language_">self</span>.m, <span class="hljs-variable language_">self</span>.alpha, <span class="hljs-variable language_">self</span>.Emax = n, m, alpha, Emax
+        <span class="hljs-variable language_">self</span>.action_space = spaces.Discrete(n*n)
+        <span class="hljs-variable language_">self</span>.segment_state = <span class="hljs-literal">None</span>
+        
+        low = np.zeros(n*n*<span class="hljs-number">2</span> + n*n + <span class="hljs-number">4</span>, dtype=np.float32)  <span class="hljs-comment"># 新增n*n维度</span>
+        high = np.ones_like(low, dtype=np.float32)
+        <span class="hljs-variable language_">self</span>.observation_space = spaces.Box(low, high, dtype=np.float32)
+        <span class="hljs-variable language_">self</span>.seed()
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">seed</span>(<span class="hljs-params">self, seed=<span class="hljs-literal">None</span></span>):
+        <span class="hljs-variable language_">self</span>.np_random, seed = gym.utils.seeding.np_random(seed)
+        <span class="hljs-keyword">return</span> [seed]
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">reset</span>(<span class="hljs-params">self, seed=<span class="hljs-literal">None</span>, options=<span class="hljs-literal">None</span></span>):
+        <span class="hljs-comment"># 初始化随机种子</span>
+        <span class="hljs-keyword">if</span> seed <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-variable language_">self</span>.seed(seed)
+        
+        <span class="hljs-variable language_">self</span>.used   = np.zeros(<span class="hljs-variable language_">self</span>.n*<span class="hljs-variable language_">self</span>.n, dtype=<span class="hljs-built_in">bool</span>)
+        <span class="hljs-variable language_">self</span>.segs   = []             <span class="hljs-comment"># list of (a,b)</span>
+        <span class="hljs-variable language_">self</span>.cur    = <span class="hljs-literal">None</span>
+        <span class="hljs-variable language_">self</span>.E      = [<span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>]
+        <span class="hljs-variable language_">self</span>.turn   = <span class="hljs-number">0</span>
+        <span class="hljs-variable language_">self</span>.phase  = <span class="hljs-number">0</span>              <span class="hljs-comment"># 0=选起点,1=首步,2=对弈中</span>
+        <span class="hljs-variable language_">self</span>.over   = <span class="hljs-literal">False</span>
+        <span class="hljs-variable language_">self</span>.winner = <span class="hljs-literal">None</span>
+        <span class="hljs-comment"># 初始化线段状态矩阵（n x n）</span>
+        <span class="hljs-variable language_">self</span>.segment_state = np.zeros((<span class="hljs-variable language_">self</span>.n, <span class="hljs-variable language_">self</span>.n), dtype=np.float32)
+        <span class="hljs-variable language_">self</span>.cur_players = [<span class="hljs-literal">None</span>, <span class="hljs-literal">None</span>]
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), {}  <span class="hljs-comment"># 返回观察和空字典</span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_update_segment_state</span>(<span class="hljs-params">self, a, b</span>):
+        <span class="hljs-string">&quot;&quot;&quot;更新线段状态矩阵&quot;&quot;&quot;</span>
+        xa, ya = <span class="hljs-variable language_">self</span>.xy(a)
+        xb, yb = <span class="hljs-variable language_">self</span>.xy(b)
+        
+        <span class="hljs-comment"># 计算线段方向向量</span>
+        dx = xb - xa
+        dy = yb - ya
+        
+        <span class="hljs-comment"># 计算线段长度</span>
+        length = <span class="hljs-built_in">max</span>(<span class="hljs-built_in">abs</span>(dx), <span class="hljs-built_in">abs</span>(dy))
+        <span class="hljs-keyword">if</span> length == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span>
+            
+        <span class="hljs-comment"># 沿线段路径更新状态</span>
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(length + <span class="hljs-number">1</span>):
+            t = i / length
+            x = <span class="hljs-built_in">int</span>(<span class="hljs-built_in">round</span>(xa + t * dx))
+            y = <span class="hljs-built_in">int</span>(<span class="hljs-built_in">round</span>(ya + t * dy))
+            <span class="hljs-keyword">if</span> <span class="hljs-number">0</span> &lt;= x &lt; <span class="hljs-variable language_">self</span>.n <span class="hljs-keyword">and</span> <span class="hljs-number">0</span> &lt;= y &lt; <span class="hljs-variable language_">self</span>.n:
+                <span class="hljs-comment"># 使用线性衰减值表示线段影响</span>
+                <span class="hljs-variable language_">self</span>.segment_state[y, x] = <span class="hljs-built_in">min</span>(<span class="hljs-number">1.0</span>, <span class="hljs-variable language_">self</span>.segment_state[y, x] + <span class="hljs-number">0.8</span> * (<span class="hljs-number">1</span> - t))
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_get_obs</span>(<span class="hljs-params">self</span>):
+        u = <span class="hljs-variable language_">self</span>.used.astype(np.float32)
+        c = np.zeros_like(u)
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.cur <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+            c[<span class="hljs-variable language_">self</span>.cur] = <span class="hljs-number">1.0</span>
+        
+        <span class="hljs-comment"># 展平线段状态矩阵并归一化</span>
+        seg_flat = <span class="hljs-variable language_">self</span>.segment_state.flatten().astype(np.float32)
+        
+        e0, e1 = <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">0</span>]/<span class="hljs-variable language_">self</span>.Emax, <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">1</span>]/<span class="hljs-variable language_">self</span>.Emax
+        p2 = <span class="hljs-variable language_">self</span>.phase / <span class="hljs-number">2.0</span>
+        t0 = <span class="hljs-built_in">float</span>(<span class="hljs-variable language_">self</span>.turn)
+        
+        <span class="hljs-comment"># 包含线段状态</span>
+        <span class="hljs-keyword">return</span> np.concatenate([u, c, seg_flat, [e0, e1, p2, t0]]).astype(np.float32)
+
+    
+    <span class="hljs-comment"># —— 平面几何 ——  </span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">xy</span>(<span class="hljs-params">self, i</span>):
+        <span class="hljs-comment"># 返回 (x, y)：x=col, y=row</span>
+        <span class="hljs-keyword">return</span> (i % <span class="hljs-variable language_">self</span>.n, i // <span class="hljs-variable language_">self</span>.n)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">orient</span>(<span class="hljs-params">self, a, b, c</span>):
+        xa, ya = <span class="hljs-variable language_">self</span>.xy(a); xb, yb = <span class="hljs-variable language_">self</span>.xy(b); xc, yc = <span class="hljs-variable language_">self</span>.xy(c)
+        <span class="hljs-keyword">return</span> (xb - xa)*(yc - ya) - (yb - ya)*(xc - xa)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">on_segment</span>(<span class="hljs-params">self, a, b, c</span>):
+        <span class="hljs-comment"># c 在线段 ab 上（包括端点）</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.orient(a, b, c) != <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>
+        xa, ya = <span class="hljs-variable language_">self</span>.xy(a); xb, yb = <span class="hljs-variable language_">self</span>.xy(b); xc, yc = <span class="hljs-variable language_">self</span>.xy(c)
+        <span class="hljs-keyword">return</span> (<span class="hljs-built_in">min</span>(xa, xb) &lt;= xc &lt;= <span class="hljs-built_in">max</span>(xa, xb)
+                <span class="hljs-keyword">and</span> <span class="hljs-built_in">min</span>(ya, yb) &lt;= yc &lt;= <span class="hljs-built_in">max</span>(ya, yb))
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">segments_intersect</span>(<span class="hljs-params">self, a, b, c, d</span>):
+        o1 = <span class="hljs-variable language_">self</span>.orient(a, b, c)
+        o2 = <span class="hljs-variable language_">self</span>.orient(a, b, d)
+        o3 = <span class="hljs-variable language_">self</span>.orient(c, d, a)
+        o4 = <span class="hljs-variable language_">self</span>.orient(c, d, b)
+        <span class="hljs-keyword">if</span> o1*o2 &lt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> o3*o4 &lt; <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+        <span class="hljs-comment"># 端点共线或在对方线上</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.on_segment(a, b, c): <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.on_segment(a, b, d): <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.on_segment(c, d, a): <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.on_segment(c, d, b): <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>
+    
+    <span class="hljs-comment"># —— 合法走法计算 ——  </span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_legal_moves</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.over:
+            <span class="hljs-keyword">return</span> []
+        <span class="hljs-comment"># phase 0: 选任意起点</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-built_in">list</span>(<span class="hljs-built_in">range</span>(<span class="hljs-variable language_">self</span>.n*<span class="hljs-variable language_">self</span>.n))
+        <span class="hljs-comment"># phase 1: 首步，用 P0 当前能量</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">1</span>:
+            ret = []
+            <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-variable language_">self</span>.n*<span class="hljs-variable language_">self</span>.n):
+                <span class="hljs-keyword">if</span> p == <span class="hljs-variable language_">self</span>.cur: <span class="hljs-keyword">continue</span>
+                d = <span class="hljs-variable language_">self</span>.dist(<span class="hljs-variable language_">self</span>.cur, p)
+                <span class="hljs-keyword">if</span> d &lt;= <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">0</span>] + <span class="hljs-number">1e-9</span>:
+                    ret.append((p, d))
+            <span class="hljs-keyword">return</span> ret
+        <span class="hljs-comment"># phase 2: 对弈中，用当前 turn 能量，且不在线段上、不相交</span>
+        ret = []
+        <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-variable language_">self</span>.n*<span class="hljs-variable language_">self</span>.n):
+            <span class="hljs-keyword">if</span> p == <span class="hljs-variable language_">self</span>.cur <span class="hljs-keyword">or</span> <span class="hljs-variable language_">self</span>.used[p]:
+                <span class="hljs-keyword">continue</span>
+            <span class="hljs-comment"># 跳过任何在线段上的点（包括内部）</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-built_in">any</span>(<span class="hljs-variable language_">self</span>.on_segment(a, b, p) <span class="hljs-keyword">for</span> a,b <span class="hljs-keyword">in</span> <span class="hljs-variable language_">self</span>.segs):
+                <span class="hljs-keyword">continue</span>
+            d = <span class="hljs-variable language_">self</span>.dist(<span class="hljs-variable language_">self</span>.cur, p)
+            <span class="hljs-keyword">if</span> d &gt; <span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] + <span class="hljs-number">1e-9</span>:
+                <span class="hljs-keyword">continue</span>
+            <span class="hljs-comment"># 检查不与已画段相交（允许首尾相连）</span>
+            ok = <span class="hljs-literal">True</span>
+            <span class="hljs-keyword">for</span> a,b <span class="hljs-keyword">in</span> <span class="hljs-variable language_">self</span>.segs:
+                <span class="hljs-keyword">if</span> b == <span class="hljs-variable language_">self</span>.cur:
+                    <span class="hljs-keyword">continue</span>
+                <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.segments_intersect(<span class="hljs-variable language_">self</span>.cur, p, a, b):
+                    ok = <span class="hljs-literal">False</span>
+                    <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">if</span> ok:
+                ret.append((p, d))
+        <span class="hljs-keyword">return</span> ret
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">dist</span>(<span class="hljs-params">self, i, j</span>):
+        xi, yi = <span class="hljs-variable language_">self</span>.xy(i); xj, yj = <span class="hljs-variable language_">self</span>.xy(j)
+        <span class="hljs-keyword">return</span> math.hypot(xi - xj, yi - yj)
+    
+    
+    <span class="hljs-comment"># 添加动作掩码方法</span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">action_mask</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;返回当前状态下合法动作的掩码&quot;&quot;&quot;</span>
+        mask = np.zeros(<span class="hljs-variable language_">self</span>.action_space.n, dtype=<span class="hljs-built_in">bool</span>)
+        legal_moves = <span class="hljs-variable language_">self</span>._legal_moves()
+        
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">0</span>:
+            <span class="hljs-comment"># 所有点都是合法的</span>
+            legal_points = legal_moves
+        <span class="hljs-keyword">elif</span> legal_moves <span class="hljs-keyword">and</span> <span class="hljs-built_in">isinstance</span>(legal_moves[<span class="hljs-number">0</span>], <span class="hljs-built_in">tuple</span>):
+            <span class="hljs-comment"># 提取点索引</span>
+            legal_points = [p <span class="hljs-keyword">for</span> p, _ <span class="hljs-keyword">in</span> legal_moves]
+        <span class="hljs-keyword">else</span>:
+            legal_points = legal_moves
+            
+        mask[legal_points] = <span class="hljs-literal">True</span>
+        <span class="hljs-keyword">return</span> mask
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_get_opponent_moves</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;获取对手所有可能的合法移动&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.over:
+            <span class="hljs-keyword">return</span> []
+        
+        <span class="hljs-comment"># 保存当前状态</span>
+        saved_state = <span class="hljs-variable language_">self</span>._save_state()
+        
+        <span class="hljs-comment"># 切换到对手视角</span>
+        <span class="hljs-variable language_">self</span>.turn = <span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn
+        <span class="hljs-variable language_">self</span>.cur = <span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-variable language_">self</span>.turn]
+        
+        <span class="hljs-comment"># 如果对手位置无效，则没有合法移动</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.cur <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-variable language_">self</span>._restore_state(saved_state)
+            <span class="hljs-keyword">return</span> []
+        
+        <span class="hljs-comment"># 获取合法动作并处理不同返回类型</span>
+        lm = <span class="hljs-variable language_">self</span>._legal_moves()
+        moves = []
+        
+        <span class="hljs-keyword">if</span> lm:
+            <span class="hljs-comment"># 检查返回类型</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(lm[<span class="hljs-number">0</span>], <span class="hljs-built_in">tuple</span>):
+                <span class="hljs-comment"># 元组类型 (p, d)</span>
+                moves = [p <span class="hljs-keyword">for</span> p, _ <span class="hljs-keyword">in</span> lm]
+            <span class="hljs-keyword">else</span>:
+                <span class="hljs-comment"># 整数类型 p</span>
+                moves = <span class="hljs-built_in">list</span>(lm)
+        
+        <span class="hljs-comment"># 恢复原始状态</span>
+        <span class="hljs-variable language_">self</span>._restore_state(saved_state)
+        
+        <span class="hljs-keyword">return</span> moves
+
+
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_get_opponent_paths</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;获取对手所有潜在路径（考虑多步）&quot;&quot;&quot;</span>
+        opponent_pos = <span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn]
+        <span class="hljs-keyword">if</span> opponent_pos <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">return</span> []
+        
+        paths = []
+        <span class="hljs-comment"># 获取对手位置</span>
+        x, y = <span class="hljs-variable language_">self</span>.xy(opponent_pos)
+        
+        <span class="hljs-comment"># 检查8个方向的路径</span>
+        <span class="hljs-keyword">for</span> dx, dy <span class="hljs-keyword">in</span> [(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>), (<span class="hljs-number">1</span>,<span class="hljs-number">0</span>), (<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>), (-<span class="hljs-number">1</span>,<span class="hljs-number">0</span>), (<span class="hljs-number">1</span>,<span class="hljs-number">1</span>), (<span class="hljs-number">1</span>,-<span class="hljs-number">1</span>), (-<span class="hljs-number">1</span>,<span class="hljs-number">1</span>), (-<span class="hljs-number">1</span>,-<span class="hljs-number">1</span>)]:
+            path = []
+            <span class="hljs-keyword">for</span> step <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1</span>, <span class="hljs-variable language_">self</span>.n):
+                nx, ny = x + dx*step, y + dy*step
+                <span class="hljs-keyword">if</span> <span class="hljs-number">0</span> &lt;= nx &lt; <span class="hljs-variable language_">self</span>.n <span class="hljs-keyword">and</span> <span class="hljs-number">0</span> &lt;= ny &lt; <span class="hljs-variable language_">self</span>.n:
+                    point = ny * <span class="hljs-variable language_">self</span>.n + nx
+                    <span class="hljs-comment"># 检查点是否可用且未被阻塞</span>
+                    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-variable language_">self</span>.used[point] <span class="hljs-keyword">and</span> <span class="hljs-variable language_">self</span>.segment_state[ny, nx] &lt; <span class="hljs-number">0.7</span>:
+                        path.append(point)
+                    <span class="hljs-keyword">else</span>:
+                        <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">if</span> path:
+                paths.append([opponent_pos] + path)
+        <span class="hljs-keyword">return</span> paths
+
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_save_state</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;保存当前游戏状态&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">return</span> {
+            <span class="hljs-string">&#x27;used&#x27;</span>: <span class="hljs-variable language_">self</span>.used.copy(),
+            <span class="hljs-string">&#x27;segs&#x27;</span>: <span class="hljs-variable language_">self</span>.segs.copy(),
+            <span class="hljs-string">&#x27;cur&#x27;</span>: <span class="hljs-variable language_">self</span>.cur,
+            <span class="hljs-string">&#x27;E&#x27;</span>: <span class="hljs-variable language_">self</span>.E.copy(),
+            <span class="hljs-string">&#x27;turn&#x27;</span>: <span class="hljs-variable language_">self</span>.turn,
+            <span class="hljs-string">&#x27;phase&#x27;</span>: <span class="hljs-variable language_">self</span>.phase,
+            <span class="hljs-string">&#x27;over&#x27;</span>: <span class="hljs-variable language_">self</span>.over,
+            <span class="hljs-string">&#x27;winner&#x27;</span>: <span class="hljs-variable language_">self</span>.winner,
+            <span class="hljs-string">&#x27;segment_state&#x27;</span>: <span class="hljs-variable language_">self</span>.segment_state.copy(),
+            <span class="hljs-string">&#x27;cur_players&#x27;</span>: <span class="hljs-variable language_">self</span>.cur_players.copy()
+        }
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_restore_state</span>(<span class="hljs-params">self, state</span>):
+        <span class="hljs-string">&quot;&quot;&quot;恢复游戏状态&quot;&quot;&quot;</span>
+        <span class="hljs-variable language_">self</span>.used = state[<span class="hljs-string">&#x27;used&#x27;</span>].copy()
+        <span class="hljs-variable language_">self</span>.segs = state[<span class="hljs-string">&#x27;segs&#x27;</span>].copy()
+        <span class="hljs-variable language_">self</span>.cur = state[<span class="hljs-string">&#x27;cur&#x27;</span>]
+        <span class="hljs-variable language_">self</span>.E = state[<span class="hljs-string">&#x27;E&#x27;</span>].copy()
+        <span class="hljs-variable language_">self</span>.turn = state[<span class="hljs-string">&#x27;turn&#x27;</span>]
+        <span class="hljs-variable language_">self</span>.phase = state[<span class="hljs-string">&#x27;phase&#x27;</span>]
+        <span class="hljs-variable language_">self</span>.over = state[<span class="hljs-string">&#x27;over&#x27;</span>]
+        <span class="hljs-variable language_">self</span>.winner = state[<span class="hljs-string">&#x27;winner&#x27;</span>]
+        <span class="hljs-variable language_">self</span>.segment_state = state[<span class="hljs-string">&#x27;segment_state&#x27;</span>].copy()
+        <span class="hljs-variable language_">self</span>.cur_players = state[<span class="hljs-string">&#x27;cur_players&#x27;</span>].copy()
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_apply_action</span>(<span class="hljs-params">self, action</span>):
+        <span class="hljs-string">&quot;&quot;&quot;模拟应用动作（不检查合法性）&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">0</span>:
+            <span class="hljs-variable language_">self</span>.cur = action
+            <span class="hljs-variable language_">self</span>.used[action] = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.phase = <span class="hljs-number">1</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">0</span>] = <span class="hljs-variable language_">self</span>.m  <span class="hljs-comment"># 添加能量初始化</span>
+        <span class="hljs-keyword">elif</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">1</span>:
+            d = <span class="hljs-variable language_">self</span>.dist(<span class="hljs-variable language_">self</span>.cur, action)
+            <span class="hljs-variable language_">self</span>.segs.append((<span class="hljs-variable language_">self</span>.cur, action))
+            <span class="hljs-variable language_">self</span>._update_segment_state(<span class="hljs-variable language_">self</span>.cur, action)
+            <span class="hljs-variable language_">self</span>.used[action] = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">0</span>] -= d  <span class="hljs-comment"># 更新能量</span>
+            <span class="hljs-variable language_">self</span>.cur = action
+            <span class="hljs-variable language_">self</span>.phase = <span class="hljs-number">2</span>
+            <span class="hljs-variable language_">self</span>.turn = <span class="hljs-number">1</span>
+            <span class="hljs-comment"># 对手能量补充</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">1</span>] = <span class="hljs-built_in">min</span>(<span class="hljs-variable language_">self</span>.Emax, <span class="hljs-variable language_">self</span>.alpha * <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">1</span>] + <span class="hljs-variable language_">self</span>.m)
+        <span class="hljs-keyword">else</span>:
+            d = <span class="hljs-variable language_">self</span>.dist(<span class="hljs-variable language_">self</span>.cur, action)
+            <span class="hljs-variable language_">self</span>.segs.append((<span class="hljs-variable language_">self</span>.cur, action))
+            <span class="hljs-variable language_">self</span>._update_segment_state(<span class="hljs-variable language_">self</span>.cur, action)
+            <span class="hljs-variable language_">self</span>.used[action] = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] -= d  <span class="hljs-comment"># 更新当前玩家能量</span>
+            <span class="hljs-variable language_">self</span>.cur = action
+            <span class="hljs-variable language_">self</span>.turn = <span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn  <span class="hljs-comment"># 切换回合</span>
+            <span class="hljs-comment"># 新回合玩家能量补充</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] = <span class="hljs-built_in">min</span>(<span class="hljs-variable language_">self</span>.Emax, <span class="hljs-variable language_">self</span>.alpha * <span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] + <span class="hljs-variable language_">self</span>.m)
+
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_is_high_risk_position</span>(<span class="hljs-params">self, player=<span class="hljs-literal">None</span></span>):
+        <span class="hljs-string">&quot;&quot;&quot;检查指定玩家位置是否高风险&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> player <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            player = <span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn  <span class="hljs-comment"># 默认检查对手</span>
+        
+        pos = <span class="hljs-variable language_">self</span>.cur_players[player]
+        <span class="hljs-keyword">if</span> pos <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>: 
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>
+        <span class="hljs-comment"># 简化实现：检查是否被三面包围</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.cur <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>
+            
+        x, y = <span class="hljs-variable language_">self</span>.xy(<span class="hljs-variable language_">self</span>.cur)
+        blocked_sides = <span class="hljs-number">0</span>
+        <span class="hljs-keyword">for</span> dx, dy <span class="hljs-keyword">in</span> [(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>), (<span class="hljs-number">1</span>,<span class="hljs-number">0</span>), (<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>), (-<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)]:
+            nx, ny = x + dx, y + dy
+            <span class="hljs-keyword">if</span> <span class="hljs-number">0</span> &lt;= nx &lt; <span class="hljs-variable language_">self</span>.n <span class="hljs-keyword">and</span> <span class="hljs-number">0</span> &lt;= ny &lt; <span class="hljs-variable language_">self</span>.n:
+                <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.segment_state[ny, nx] &gt; <span class="hljs-number">0.7</span> <span class="hljs-keyword">or</span> <span class="hljs-variable language_">self</span>.used[ny * <span class="hljs-variable language_">self</span>.n + nx]:
+                    blocked_sides += <span class="hljs-number">1</span>
+        <span class="hljs-keyword">return</span> blocked_sides &gt;= <span class="hljs-number">3</span>
+
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_calculate_opponent_freedom</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-comment"># 获取对手所有可能移动路径</span>
+        opponent_moves = <span class="hljs-variable language_">self</span>._get_opponent_paths()
+        
+        <span class="hljs-comment"># 计算每条路径的阻塞程度</span>
+        path_scores = []
+        <span class="hljs-keyword">for</span> path <span class="hljs-keyword">in</span> opponent_moves:
+            path_block = <span class="hljs-number">0</span>
+            <span class="hljs-keyword">for</span> i, point <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(path):
+                x, y = <span class="hljs-variable language_">self</span>.xy(point)
+                weight = <span class="hljs-number">1.0</span> - (i / <span class="hljs-built_in">len</span>(path)) * <span class="hljs-number">0.5</span>  <span class="hljs-comment"># 起点权重1.0，终点权重0.5</span>
+                path_block += <span class="hljs-variable language_">self</span>.segment_state[y, x] * weight
+
+            path_scores.append(path_block / <span class="hljs-built_in">len</span>(path))
+        
+        <span class="hljs-comment"># 返回最畅通路径的分数（1表示完全自由）</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> - <span class="hljs-built_in">min</span>(path_scores) <span class="hljs-keyword">if</span> path_scores <span class="hljs-keyword">else</span> <span class="hljs-number">0.0</span>
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_check_forcing_move_vulnerability</span>(<span class="hljs-params">self, action</span>):
+        <span class="hljs-string">&quot;&quot;&quot;检查执行当前动作是否会创造漏洞（添加日志）&quot;&quot;&quot;</span>
+        <span class="hljs-comment">#print(f&quot;===== 开始漏洞检测 =====&quot;)</span>
+        <span class="hljs-comment">#print(f&quot;当前玩家: P{self.turn}, 动作: {self.xy(action)}&quot;)</span>
+        <span class="hljs-comment">#print(f&quot;当前能量: P0={self.E[0]:.2f}, P1={self.E[1]:.2f}&quot;)</span>
+        
+        <span class="hljs-comment"># 保存状态</span>
+        saved_state = <span class="hljs-variable language_">self</span>._save_state()
+        
+        <span class="hljs-keyword">try</span>:
+            <span class="hljs-comment"># 模拟执行当前动作</span>
+            <span class="hljs-comment">#print(f&quot;模拟执行动作: {self.xy(action)}&quot;)</span>
+            <span class="hljs-variable language_">self</span>._apply_action(action)
+            
+            <span class="hljs-comment"># 获取对手可能的移动</span>
+            opponent_moves = <span class="hljs-variable language_">self</span>._get_opponent_moves()
+            <span class="hljs-comment">#print(f&quot;对手可能的移动: {len(opponent_moves)}个&quot;)</span>
+            
+            penalty = <span class="hljs-number">0.0</span>
+            found_vulnerability = <span class="hljs-literal">False</span>
+            
+            <span class="hljs-comment"># 检查每个对手移动是否会造成一击制胜</span>
+            <span class="hljs-keyword">for</span> i, opponent_move <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(opponent_moves):
+                <span class="hljs-comment">#print(f&quot;检查对手动作 {i+1}/{len(opponent_moves)}: {self.xy(opponent_move)}&quot;)</span>
+                
+                <span class="hljs-comment"># 检查这个动作是否会造成一击制胜</span>
+                <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>._would_be_forcing_move(opponent_move):
+                    <span class="hljs-comment">#print(f&quot;  发现漏洞! 对手动作 {self.xy(opponent_move)} 可一击制胜&quot;)</span>
+                    penalty = -<span class="hljs-number">3.0</span>
+                    found_vulnerability = <span class="hljs-literal">True</span>
+                    <span class="hljs-keyword">break</span>
+            
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> found_vulnerability:
+                <span class="hljs-comment">#print(&quot;  未发现一击制胜漏洞&quot;)</span>
+                <span class="hljs-keyword">pass</span>
+            <span class="hljs-keyword">return</span> penalty
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            <span class="hljs-comment">#print(f&quot;漏洞检测出错: {e}&quot;)</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0.0</span>
+        <span class="hljs-keyword">finally</span>:
+            <span class="hljs-comment"># 恢复状态</span>
+            <span class="hljs-variable language_">self</span>._restore_state(saved_state)
+            <span class="hljs-comment">#print(f&quot;恢复状态完成&quot;)</span>
+            <span class="hljs-comment">#print(f&quot;===== 结束漏洞检测 =====&quot;)</span>
+
+
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_is_forcing_move</span>(<span class="hljs-params">self, action</span>):
+        <span class="hljs-string">&quot;&quot;&quot;检查当前动作是否是一击制胜&quot;&quot;&quot;</span>
+        <span class="hljs-comment"># 保存当前状态</span>
+        saved_state = <span class="hljs-variable language_">self</span>._save_state()
+        
+        <span class="hljs-comment"># 模拟执行动作</span>
+        <span class="hljs-variable language_">self</span>._apply_action(action)
+        
+        <span class="hljs-comment"># 检查对手是否有合法移动</span>
+        has_legal_moves = <span class="hljs-built_in">len</span>(<span class="hljs-variable language_">self</span>._legal_moves()) &gt; <span class="hljs-number">0</span>
+        
+        <span class="hljs-comment"># 恢复状态</span>
+        <span class="hljs-variable language_">self</span>._restore_state(saved_state)
+        
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">not</span> has_legal_moves
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_would_be_forcing_move</span>(<span class="hljs-params">self, move</span>):
+        <span class="hljs-string">&quot;&quot;&quot;检查指定动作是否会造成一击制胜&quot;&quot;&quot;</span>
+        <span class="hljs-comment"># 保存当前状态</span>
+        saved_state = <span class="hljs-variable language_">self</span>._save_state()
+        
+        <span class="hljs-comment"># 模拟执行动作</span>
+        <span class="hljs-variable language_">self</span>._apply_action(move)
+        
+        <span class="hljs-comment"># 检查是否有合法移动</span>
+        has_legal_moves = <span class="hljs-built_in">len</span>(<span class="hljs-variable language_">self</span>._legal_moves()) &gt; <span class="hljs-number">0</span>
+        
+        <span class="hljs-comment"># 恢复状态</span>
+        <span class="hljs-variable language_">self</span>._restore_state(saved_state)
+        
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">not</span> has_legal_moves
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_calculate_control_ratio</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;计算空间控制比例（基于可达区域）&quot;&quot;&quot;</span>
+        <span class="hljs-comment"># 洪水填充计算控制区域</span>
+        player_area = <span class="hljs-variable language_">self</span>._flood_fill_area(<span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-variable language_">self</span>.turn])
+        opp_area = <span class="hljs-variable language_">self</span>._flood_fill_area(<span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn])
+        
+        total = player_area + opp_area
+        <span class="hljs-keyword">return</span> player_area / total <span class="hljs-keyword">if</span> total &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0.5</span>
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_flood_fill_area</span>(<span class="hljs-params">self, start_point</span>):
+        <span class="hljs-keyword">if</span> start_point <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+        
+        <span class="hljs-comment"># 使用集合代替数组（更准确）</span>
+        visited = <span class="hljs-built_in">set</span>()
+        queue = collections.deque([start_point])
+        area = <span class="hljs-number">0</span>
+        
+        <span class="hljs-keyword">while</span> queue:
+            point = queue.popleft()
+            <span class="hljs-keyword">if</span> point <span class="hljs-keyword">in</span> visited:
+                <span class="hljs-keyword">continue</span>
+                
+            visited.add(point)
+            area += <span class="hljs-number">1</span>
+            
+            x, y = <span class="hljs-variable language_">self</span>.xy(point)
+            <span class="hljs-keyword">for</span> dx, dy <span class="hljs-keyword">in</span> [(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>), (<span class="hljs-number">1</span>,<span class="hljs-number">0</span>), (<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>), (-<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)]:
+                nx, ny = x + dx, y + dy
+                <span class="hljs-keyword">if</span> <span class="hljs-number">0</span> &lt;= nx &lt; <span class="hljs-variable language_">self</span>.n <span class="hljs-keyword">and</span> <span class="hljs-number">0</span> &lt;= ny &lt; <span class="hljs-variable language_">self</span>.n:
+                    neighbor = ny * <span class="hljs-variable language_">self</span>.n + nx
+                    
+                    <span class="hljs-comment"># 检查是否可通行（考虑线段阻塞）</span>
+                    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-variable language_">self</span>.used[neighbor] <span class="hljs-keyword">and</span> <span class="hljs-variable language_">self</span>.segment_state[ny, nx] &lt; <span class="hljs-number">0.7</span>:
+                        <span class="hljs-comment"># 检查路径是否被阻塞</span>
+                        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-variable language_">self</span>._is_line_blocked(x, y, nx, ny):
+                            queue.append(neighbor)
+        
+        <span class="hljs-keyword">return</span> area
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_is_line_blocked</span>(<span class="hljs-params">self, x1, y1, x2, y2</span>):
+        <span class="hljs-string">&quot;&quot;&quot;检查两点间直线路径是否被阻塞&quot;&quot;&quot;</span>
+        dx = x2 - x1
+        dy = y2 - y1
+        steps = <span class="hljs-built_in">max</span>(<span class="hljs-built_in">abs</span>(dx), <span class="hljs-built_in">abs</span>(dy))
+        
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1</span>, steps):
+            t = i / steps
+            x = <span class="hljs-built_in">int</span>(x1 + t * dx)
+            y = <span class="hljs-built_in">int</span>(y1 + t * dy)
+            <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.segment_state[y, x] &gt; <span class="hljs-number">0.8</span>:
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>
+
+
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">step</span>(<span class="hljs-params">self, action</span>):
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.over:
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), <span class="hljs-number">0.0</span>, <span class="hljs-literal">True</span>, <span class="hljs-literal">False</span>, {}
+        
+        <span class="hljs-comment"># —— phase 0: 选起点</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">0</span>:
+            <span class="hljs-comment"># 在phase 0，所有点都是合法的</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> (<span class="hljs-number">0</span> &lt;= action &lt; <span class="hljs-variable language_">self</span>.n * <span class="hljs-variable language_">self</span>.n):
+                <span class="hljs-variable language_">self</span>.over = <span class="hljs-literal">True</span>
+                <span class="hljs-variable language_">self</span>.winner = <span class="hljs-number">1</span>
+                
+                <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), -<span class="hljs-number">1.0</span>, <span class="hljs-literal">True</span>, <span class="hljs-literal">False</span>, {<span class="hljs-string">&#x27;winner&#x27;</span>:<span class="hljs-number">1</span>}
+            
+            p = action
+            <span class="hljs-variable language_">self</span>.cur = p
+            <span class="hljs-variable language_">self</span>.used[p] = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">0</span>] = <span class="hljs-variable language_">self</span>.m
+            <span class="hljs-variable language_">self</span>.phase = <span class="hljs-number">1</span>
+            <span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-number">0</span>] = <span class="hljs-variable language_">self</span>.cur
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), <span class="hljs-number">0.0</span>, <span class="hljs-literal">False</span>, <span class="hljs-literal">False</span>, {}
+        
+        <span class="hljs-comment"># —— phase 1: 首条终点</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.phase == <span class="hljs-number">1</span>:
+            moves = <span class="hljs-variable language_">self</span>._legal_moves()
+            mv = <span class="hljs-built_in">next</span>(((p,d) <span class="hljs-keyword">for</span> p,d <span class="hljs-keyword">in</span> moves <span class="hljs-keyword">if</span> p == action), <span class="hljs-literal">None</span>)
+            <span class="hljs-keyword">if</span> mv <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-comment"># 非法首步，大惩并结束</span>
+                <span class="hljs-variable language_">self</span>.over = <span class="hljs-literal">True</span>
+                <span class="hljs-variable language_">self</span>.winner = <span class="hljs-number">1</span>
+                <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), -<span class="hljs-number">1.0</span>, <span class="hljs-literal">True</span>, <span class="hljs-literal">False</span>, {<span class="hljs-string">&#x27;winner&#x27;</span>:<span class="hljs-number">1</span>}
+            
+            p,d = mv
+            <span class="hljs-variable language_">self</span>.segs.append((<span class="hljs-variable language_">self</span>.cur, p))
+            <span class="hljs-variable language_">self</span>._update_segment_state(<span class="hljs-variable language_">self</span>.cur, p)
+            <span class="hljs-variable language_">self</span>.used[p] = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">0</span>] -= d
+            <span class="hljs-variable language_">self</span>.cur = p
+            <span class="hljs-comment"># 进入 phase 2</span>
+            <span class="hljs-variable language_">self</span>.phase = <span class="hljs-number">2</span>
+            <span class="hljs-variable language_">self</span>.turn  = <span class="hljs-number">1</span>
+            <span class="hljs-comment"># 首次补能给 P1</span>
+            <span class="hljs-variable language_">self</span>.E[<span class="hljs-number">1</span>] = <span class="hljs-built_in">min</span>(<span class="hljs-variable language_">self</span>.Emax, <span class="hljs-variable language_">self</span>.alpha*<span class="hljs-variable language_">self</span>.E[<span class="hljs-number">1</span>] + <span class="hljs-variable language_">self</span>.m)
+            <span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-number">0</span>] = p
+            <span class="hljs-comment"># 检查 P1 能否走</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-variable language_">self</span>._legal_moves():
+                <span class="hljs-variable language_">self</span>.over   = <span class="hljs-literal">True</span>
+                <span class="hljs-variable language_">self</span>.winner = <span class="hljs-number">0</span>
+                <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), +<span class="hljs-number">1.0</span>, <span class="hljs-literal">True</span>, <span class="hljs-literal">False</span>, {<span class="hljs-string">&#x27;winner&#x27;</span>:<span class="hljs-number">0</span>}
+            
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), <span class="hljs-number">0.0</span>, <span class="hljs-literal">False</span>, <span class="hljs-literal">False</span>, {}
+        
+        <span class="hljs-comment"># —— phase 2: 对弈中</span>
+        moves = <span class="hljs-variable language_">self</span>._legal_moves()
+        mv = <span class="hljs-built_in">next</span>(((p,d) <span class="hljs-keyword">for</span> p,d <span class="hljs-keyword">in</span> moves <span class="hljs-keyword">if</span> p == action), <span class="hljs-literal">None</span>)
+        <span class="hljs-keyword">if</span> mv <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-comment"># 非法走子</span>
+            <span class="hljs-variable language_">self</span>.over   = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.winner = <span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), -<span class="hljs-number">1.0</span>, <span class="hljs-literal">True</span>, <span class="hljs-literal">False</span>, {<span class="hljs-string">&#x27;winner&#x27;</span>:<span class="hljs-variable language_">self</span>.winner}
+        
+        p,d = mv
+        <span class="hljs-variable language_">self</span>.segs.append((<span class="hljs-variable language_">self</span>.cur, p))
+        <span class="hljs-variable language_">self</span>._update_segment_state(<span class="hljs-variable language_">self</span>.cur, p)
+        <span class="hljs-variable language_">self</span>.used[p] = <span class="hljs-literal">True</span>
+        <span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] -= d
+        <span class="hljs-variable language_">self</span>.cur = p
+        <span class="hljs-variable language_">self</span>.cur_players[<span class="hljs-variable language_">self</span>.turn] = p
+        <span class="hljs-comment"># ===== 核心策略奖励 =====</span>
+        strategic_reward = <span class="hljs-number">0.0</span>
+        opponent = <span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn
+        
+        <span class="hljs-comment"># 1. 空间压制奖励：计算对手被限制的程度</span>
+        opp_freedom = <span class="hljs-variable language_">self</span>._calculate_opponent_freedom()
+        strategic_reward += <span class="hljs-number">0.9</span> * (<span class="hljs-number">1</span> - opp_freedom)  <span class="hljs-comment"># 对手自由度越低越好</span>
+        
+        <span class="hljs-comment"># 2. 一击制胜检测</span>
+        forcing_move_penalty = <span class="hljs-variable language_">self</span>._check_forcing_move_vulnerability(action)
+        strategic_reward += forcing_move_penalty
+        
+        <span class="hljs-comment"># 3. 执行一击制胜奖励</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>._is_forcing_move(action):
+            strategic_reward += <span class="hljs-number">3.0</span>  <span class="hljs-comment"># 大奖励</span>
+        
+        <span class="hljs-comment"># 4. 空间分割奖励（全局控制）</span>
+        <span class="hljs-comment">#control_ratio = self._calculate_control_ratio()</span>
+        <span class="hljs-comment">#strategic_reward += 0.5 * (control_ratio - 0.5)  # [-0.25, 0.25]</span>
+        
+        <span class="hljs-comment"># 切换回合</span>
+        <span class="hljs-variable language_">self</span>.turn ^= <span class="hljs-number">1</span>
+        <span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] = <span class="hljs-built_in">min</span>(<span class="hljs-variable language_">self</span>.Emax, <span class="hljs-variable language_">self</span>.alpha*<span class="hljs-variable language_">self</span>.E[<span class="hljs-variable language_">self</span>.turn] + <span class="hljs-variable language_">self</span>.m)
+        
+        
+        <span class="hljs-comment"># 检查游戏是否结束</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-variable language_">self</span>._legal_moves():
+            <span class="hljs-variable language_">self</span>.over = <span class="hljs-literal">True</span>
+            <span class="hljs-variable language_">self</span>.winner = <span class="hljs-number">1</span> - <span class="hljs-variable language_">self</span>.turn
+            win_reward = +<span class="hljs-number">1.0</span> <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.winner == <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> -<span class="hljs-number">1.0</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), win_reward + strategic_reward, <span class="hljs-literal">True</span>, <span class="hljs-literal">False</span>, {<span class="hljs-string">&#x27;winner&#x27;</span>: <span class="hljs-variable language_">self</span>.winner}
+        
+        <span class="hljs-comment"># 返回策略性奖励</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._get_obs(), strategic_reward, <span class="hljs-literal">False</span>, <span class="hljs-literal">False</span>, {}
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">render</span>(<span class="hljs-params">self, mode=<span class="hljs-string">&#x27;human&#x27;</span></span>):
+        <span class="hljs-keyword">pass</span></code></pre></div>
+<h3 class="md-h md-h3" id="可视化验证"><span class="md-hash" aria-hidden="true">### </span><span class="md-h-text">可视化验证</span></h3>
+<p>有了环境，我们需要先进行验证，以方便我们检测潜在的错误：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">184 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python"><span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+<span class="hljs-keyword">from</span> matplotlib.patches <span class="hljs-keyword">import</span> Rectangle
+<span class="hljs-keyword">from</span> game_env <span class="hljs-keyword">import</span> NoCrossLinesEnv
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">render_env</span>(<span class="hljs-params">env, ax, func_outputs=<span class="hljs-literal">None</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;增强版棋盘渲染&quot;&quot;&quot;</span>
+    n = env.n
+    cell = <span class="hljs-number">1.0</span> / (n - <span class="hljs-number">1</span>)
+    ax.clear()
+    
+    <span class="hljs-comment"># 1. 画棋盘背景</span>
+    ax.add_patch(Rectangle((<span class="hljs-number">0</span>, <span class="hljs-number">0</span>), <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, facecolor=<span class="hljs-string">&#x27;#f0f0f0&#x27;</span>, edgecolor=<span class="hljs-string">&#x27;k&#x27;</span>))
+    
+    <span class="hljs-comment"># 2) 画线段</span>
+    <span class="hljs-keyword">for</span> a, b <span class="hljs-keyword">in</span> env.segs:
+        ya, xa = <span class="hljs-built_in">divmod</span>(a, n)
+        yb, xb = <span class="hljs-built_in">divmod</span>(b, n)
+        ax.plot([xa*cell, xb*cell], [ya*cell, yb*cell], <span class="hljs-string">&#x27;k-&#x27;</span>, lw=<span class="hljs-number">2</span>)
+    
+    <span class="hljs-comment"># 3) 画点 - 修复点颜色判断</span>
+    <span class="hljs-comment"># 获取合法动作并统一处理格式</span>
+    lm = env._legal_moves()
+    <span class="hljs-keyword">if</span> lm <span class="hljs-keyword">and</span> <span class="hljs-built_in">isinstance</span>(lm[<span class="hljs-number">0</span>], <span class="hljs-built_in">tuple</span>):  <span class="hljs-comment"># phase 1或2</span>
+        legal_points = [p <span class="hljs-keyword">for</span> p, _ <span class="hljs-keyword">in</span> lm]
+    <span class="hljs-keyword">else</span>:  <span class="hljs-comment"># phase 0</span>
+        legal_points = <span class="hljs-built_in">list</span>(lm)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n*n):
+        y, x = <span class="hljs-built_in">divmod</span>(i, n)
+        <span class="hljs-keyword">if</span> i == env.cur:
+            color = <span class="hljs-string">&#x27;red&#x27;</span>
+            size = <span class="hljs-number">10</span>
+        <span class="hljs-keyword">elif</span> (<span class="hljs-keyword">not</span> env.over) <span class="hljs-keyword">and</span> (<span class="hljs-keyword">not</span> env.used[i]):
+            <span class="hljs-comment"># 使用统一处理后的合法点列表</span>
+            color = <span class="hljs-string">&#x27;lime&#x27;</span> <span class="hljs-keyword">if</span> i <span class="hljs-keyword">in</span> legal_points <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;black&#x27;</span>
+            size = <span class="hljs-number">8</span> <span class="hljs-keyword">if</span> color == <span class="hljs-string">&#x27;lime&#x27;</span> <span class="hljs-keyword">else</span> <span class="hljs-number">4</span>
+        <span class="hljs-keyword">else</span>:
+            color = <span class="hljs-string">&#x27;gray&#x27;</span>
+            size = <span class="hljs-number">6</span>
+        ax.plot(x*cell, y*cell, <span class="hljs-string">&#x27;o&#x27;</span>, color=color, markersize=size)
+    
+    <span class="hljs-comment"># 4) 布局和标题</span>
+    ax.set_aspect(<span class="hljs-string">&#x27;equal&#x27;</span>)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    
+    title = <span class="hljs-string">f&#x27;P0 E=<span class="hljs-subst">{env.E[<span class="hljs-number">0</span>]:<span class="hljs-number">.2</span>f}</span> | P1 E=<span class="hljs-subst">{env.E[<span class="hljs-number">1</span>]:<span class="hljs-number">.2</span>f}</span> | Turn: P<span class="hljs-subst">{env.turn}</span>&#x27;</span>
+    <span class="hljs-keyword">if</span> env.over:
+        title = <span class="hljs-string">f&#x27;Game Over - Winner: P<span class="hljs-subst">{env.winner}</span>&#x27;</span>
+    ax.set_title(title, fontsize=<span class="hljs-number">12</span>)
+    
+    <span class="hljs-comment"># 5) 显示辅助信息</span>
+    <span class="hljs-keyword">if</span> func_outputs:
+        info_text = <span class="hljs-string">&quot;Function Outputs:\n&quot;</span>
+        info_text += <span class="hljs-string">f&quot;Opp Moves: <span class="hljs-subst">{<span class="hljs-built_in">len</span>(func_outputs[<span class="hljs-string">&#x27;opp_moves&#x27;</span>])}</span>\n&quot;</span>
+        info_text += <span class="hljs-string">f&quot;Player Area: <span class="hljs-subst">{func_outputs[<span class="hljs-string">&#x27;player_area&#x27;</span>]}</span>\n&quot;</span>
+        info_text += <span class="hljs-string">f&quot;Opp Area: <span class="hljs-subst">{func_outputs[<span class="hljs-string">&#x27;opp_area&#x27;</span>]}</span>&quot;</span>
+        ax.text(<span class="hljs-number">1.05</span>, <span class="hljs-number">0.5</span>, info_text, transform=ax.transAxes, 
+                fontsize=<span class="hljs-number">9</span>, verticalalignment=<span class="hljs-string">&#x27;center&#x27;</span>)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">validate_functions</span>(<span class="hljs-params">env</span>):
+    <span class="hljs-string">&quot;&quot;&quot;获取辅助函数输出（不修改状态）&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">return</span> {
+        <span class="hljs-string">&#x27;opp_moves&#x27;</span>: env._get_opponent_moves(),
+        <span class="hljs-string">&#x27;player_area&#x27;</span>: env._flood_fill_area(env.cur_players[env.turn]),
+        <span class="hljs-string">&#x27;opp_area&#x27;</span>: env._flood_fill_area(env.cur_players[<span class="hljs-number">1</span> - env.turn])
+    }
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">interactive_validation</span>(<span class="hljs-params">env, max_steps=<span class="hljs-number">50</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;交互式验证模式&quot;&quot;&quot;</span>
+    env.reset()
+    plt.ion()
+    fig, ax = plt.subplots(figsize=(<span class="hljs-number">12</span>, <span class="hljs-number">8</span>))
+    
+    <span class="hljs-keyword">for</span> step <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(max_steps):
+        <span class="hljs-keyword">if</span> env.over:
+            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Game Over!&quot;</span>)
+            <span class="hljs-keyword">break</span>
+            
+        <span class="hljs-comment"># 获取合法动作并处理格式</span>
+        lm = env._legal_moves()
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> lm:
+            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;No legal moves!&quot;</span>)
+            <span class="hljs-keyword">break</span>
+        
+        <span class="hljs-comment"># 处理不同阶段返回类型</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(lm[<span class="hljs-number">0</span>], <span class="hljs-built_in">tuple</span>):  <span class="hljs-comment"># phase 1或2</span>
+            legal = [p <span class="hljs-keyword">for</span> p, _ <span class="hljs-keyword">in</span> lm]
+        <span class="hljs-keyword">else</span>:  <span class="hljs-comment"># phase 0</span>
+            legal = <span class="hljs-built_in">list</span>(lm)
+        
+        <span class="hljs-comment"># 随机选择动作</span>
+        action = np.random.choice(legal)
+        x, y = env.xy(action)
+        
+        <span class="hljs-comment"># 获取辅助信息</span>
+        func_outputs = validate_functions(env)
+        
+        <span class="hljs-comment"># 渲染环境</span>
+        render_env(env, ax, func_outputs)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;\nStep <span class="hljs-subst">{step}</span>: Action (<span class="hljs-subst">{x}</span>, <span class="hljs-subst">{y}</span>)&quot;</span>)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Func Outputs: <span class="hljs-subst">{func_outputs}</span>&quot;</span>)
+        
+        <span class="hljs-comment"># 执行动作并获取env计算的奖励</span>
+        _, reward, done, _, info = env.step(action)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Env Reward: <span class="hljs-subst">{reward:<span class="hljs-number">.4</span>f}</span>&quot;</span>)
+        
+        <span class="hljs-comment"># 等待用户输入</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;Press Enter to continue (q to quit): &quot;</span>).lower() == <span class="hljs-string">&#x27;q&#x27;</span>:
+            <span class="hljs-keyword">break</span>
+            
+    plt.ioff()
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">last_steps_validation</span>(<span class="hljs-params">env, max_steps=<span class="hljs-number">100</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;模拟随机游戏并显示最后4步的详细信息&quot;&quot;&quot;</span>
+    env.reset()
+    plt.ion()
+    fig, ax = plt.subplots(figsize=(<span class="hljs-number">12</span>, <span class="hljs-number">8</span>))
+    
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;===== 最后4步验证模式 =====&quot;</span>)
+    history = []
+    
+    <span class="hljs-keyword">for</span> step <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(max_steps):
+        <span class="hljs-keyword">if</span> env.over:
+            <span class="hljs-keyword">break</span>
+            
+        <span class="hljs-comment"># 安全获取合法动作</span>
+        <span class="hljs-keyword">try</span>:
+            lm = env._legal_moves()
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> lm:
+                <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;没有合法动作!&quot;</span>)
+                <span class="hljs-keyword">break</span>
+                
+            <span class="hljs-comment"># 处理不同阶段返回类型</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(lm[<span class="hljs-number">0</span>], <span class="hljs-built_in">tuple</span>):  <span class="hljs-comment"># phase 1或2</span>
+                legal = [p <span class="hljs-keyword">for</span> p, _ <span class="hljs-keyword">in</span> lm]
+            <span class="hljs-keyword">else</span>:  <span class="hljs-comment"># phase 0</span>
+                legal = <span class="hljs-built_in">list</span>(lm)
+                
+            action = np.random.choice(legal)
+            
+            <span class="hljs-comment"># 执行动作并记录</span>
+            obs, reward, done, _, info = env.step(action)
+            history.append({
+                <span class="hljs-string">&#x27;step&#x27;</span>: step,
+                <span class="hljs-string">&#x27;action&#x27;</span>: action,
+                <span class="hljs-string">&#x27;reward&#x27;</span>: reward,
+                <span class="hljs-string">&#x27;state&#x27;</span>: env._save_state()
+            })
+            
+            <span class="hljs-comment"># 渲染</span>
+            render_env(env, ax)
+            plt.pause(<span class="hljs-number">0.5</span>)
+            
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;步骤 <span class="hljs-subst">{step}</span> 出错: <span class="hljs-subst">{e}</span>&quot;</span>)
+            <span class="hljs-keyword">break</span>
+    
+    plt.ioff()
+    
+    <span class="hljs-comment"># 显示最后4步详情</span>
+    last_4 = history[-<span class="hljs-number">4</span>:] <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(history) &gt;=<span class="hljs-number">4</span> <span class="hljs-keyword">else</span> history
+    <span class="hljs-keyword">for</span> step <span class="hljs-keyword">in</span> last_4:
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;\n步骤 <span class="hljs-subst">{step[<span class="hljs-string">&#x27;step&#x27;</span>]}</span>:&quot;</span>)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;动作: <span class="hljs-subst">{env.xy(step[<span class="hljs-string">&#x27;action&#x27;</span>])}</span>&quot;</span>)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;奖励: <span class="hljs-subst">{step[<span class="hljs-string">&#x27;reward&#x27;</span>]:<span class="hljs-number">.2</span>f}</span>&quot;</span>)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;能量: P0=<span class="hljs-subst">{step[<span class="hljs-string">&#x27;state&#x27;</span>][<span class="hljs-string">&#x27;E&#x27;</span>][<span class="hljs-number">0</span>]:<span class="hljs-number">.2</span>f}</span>, P1=<span class="hljs-subst">{step[<span class="hljs-string">&#x27;state&#x27;</span>][<span class="hljs-string">&#x27;E&#x27;</span>][<span class="hljs-number">1</span>]:<span class="hljs-number">.2</span>f}</span>&quot;</span>)
+    
+    <span class="hljs-keyword">return</span> history
+
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:
+    env = NoCrossLinesEnv(n=<span class="hljs-number">14</span>, m=<span class="hljs-number">3</span>, alpha=<span class="hljs-number">0.8</span>, Emax=<span class="hljs-number">12</span>)
+    
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;选择模式:&quot;</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;1. 交互式验证&quot;</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;2. 最后4步验证&quot;</span>)
+    choice = <span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;选择 (1-2): &quot;</span>)
+
+    <span class="hljs-keyword">if</span> choice == <span class="hljs-string">&#x27;1&#x27;</span>:
+        interactive_validation(env)
+    <span class="hljs-keyword">else</span>:
+        last_steps_validation(env)</code></pre></div>
+<h4 class="md-h md-h4" id="先手优势"><span class="md-hash" aria-hidden="true">#### </span><span class="md-h-text">先手优势？</span></h4>
+<p>我们刚刚的可视化验证就是使用蒙特卡洛方法进行决策的，进行大量重复对局后发现：</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/image-20250708163115017.png" data-name="image-20250708163115017.png" data-alt="image-20250708163115017"><img class="md-img" src="/img/Program/assets/image-20250708163115017.png" alt="image-20250708163115017" loading="lazy" decoding="async"><span class="md-caption">image-20250708163115017</span></span>
+<p>先后手胜率是一样的，因此游戏应该是相对公平的</p>
+<h3 class="md-h md-h3" id="模型设计与训练"><span class="md-hash" aria-hidden="true">### </span><span class="md-h-text">模型设计与训练</span></h3>
+<p>这里我们选用Maskable PPO算法，其中策略网络和价值网络无需我们设计，我们只需要自定义特征提取器将信息转化为矩阵即可：</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/image-20250708163228081.png" data-name="image-20250708163228081.png" data-alt="image-20250708163228081"><img class="md-img" src="/img/Program/assets/image-20250708163228081.png" alt="image-20250708163228081" loading="lazy" decoding="async"><span class="md-caption">image-20250708163228081</span></span>
+<p>可以发现我将特征提取器分为了两路，离散数值特征使用全连接网络即可，线段状态我们之前已经压缩为了图，因此使用了卷积网络，最后再进行特征融合</p>
+<p>之后我们可以编写训练脚本：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">438 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python"><span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> math
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> torch
+<span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn
+<span class="hljs-keyword">from</span> stable_baselines3 <span class="hljs-keyword">import</span> PPO
+<span class="hljs-keyword">from</span> stable_baselines3.common.vec_env <span class="hljs-keyword">import</span> DummyVecEnv, SubprocVecEnv
+<span class="hljs-keyword">from</span> stable_baselines3.common.callbacks <span class="hljs-keyword">import</span> BaseCallback
+<span class="hljs-keyword">from</span> stable_baselines3.common.torch_layers <span class="hljs-keyword">import</span> BaseFeaturesExtractor
+<span class="hljs-keyword">from</span> sb3_contrib <span class="hljs-keyword">import</span> MaskablePPO
+<span class="hljs-keyword">from</span> sb3_contrib.common.maskable.policies <span class="hljs-keyword">import</span> MaskableActorCriticPolicy
+<span class="hljs-keyword">from</span> sb3_contrib.common.maskable.utils <span class="hljs-keyword">import</span> get_action_masks
+<span class="hljs-keyword">from</span> sb3_contrib.common.wrappers <span class="hljs-keyword">import</span> ActionMasker
+<span class="hljs-keyword">from</span> game_env <span class="hljs-keyword">import</span> NoCrossLinesEnv
+
+<span class="hljs-comment"># 自定义神经网络架构 - 参数增大4倍</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomCNN</span>(<span class="hljs-title class_ inherited__">BaseFeaturesExtractor</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, observation_space, features_dim=<span class="hljs-number">1024</span></span>):  <span class="hljs-comment"># 特征维度从256增大到1024</span>
+        <span class="hljs-built_in">super</span>().__init__(observation_space, features_dim)
+        <span class="hljs-variable language_">self</span>.n_input = observation_space.shape[<span class="hljs-number">0</span>]
+        
+        <span class="hljs-comment"># 从观察空间推断棋盘大小 n</span>
+        total_dim = observation_space.shape[<span class="hljs-number">0</span>]
+        <span class="hljs-variable language_">self</span>.n = <span class="hljs-number">14</span>
+        <span class="hljs-variable language_">self</span>.segment_size = <span class="hljs-variable language_">self</span>.n * <span class="hljs-variable language_">self</span>.n
+        
+        <span class="hljs-comment"># 点信息部分: 已用点 + 当前点 + 能量/阶段/回合信息</span>
+        point_info_dim = <span class="hljs-number">2</span> * <span class="hljs-variable language_">self</span>.segment_size + <span class="hljs-number">4</span>
+        
+        <span class="hljs-comment"># 线段状态部分: n x n 网格 - 通道数增大4倍</span>
+        <span class="hljs-variable language_">self</span>.segment_net = nn.Sequential(
+            nn.Conv2d(<span class="hljs-number">1</span>, <span class="hljs-number">64</span>, kernel_size=<span class="hljs-number">3</span>, stride=<span class="hljs-number">1</span>, padding=<span class="hljs-number">1</span>),  <span class="hljs-comment"># 16-&gt;64</span>
+            nn.ReLU(),
+            nn.MaxPool2d(<span class="hljs-number">2</span>),
+            nn.Conv2d(<span class="hljs-number">64</span>, <span class="hljs-number">128</span>, kernel_size=<span class="hljs-number">3</span>, stride=<span class="hljs-number">1</span>, padding=<span class="hljs-number">1</span>),  <span class="hljs-comment"># 32-&gt;128</span>
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(<span class="hljs-number">128</span> * (<span class="hljs-variable language_">self</span>.n//<span class="hljs-number">2</span>) * (<span class="hljs-variable language_">self</span>.n//<span class="hljs-number">2</span>), <span class="hljs-number">512</span>),  <span class="hljs-comment"># 128-&gt;512</span>
+            nn.ReLU()
+        )
+        
+        <span class="hljs-comment"># 点信息处理 - 层大小增大4倍</span>
+        <span class="hljs-variable language_">self</span>.point_net = nn.Sequential(
+            nn.Linear(point_info_dim, <span class="hljs-number">2048</span>),  <span class="hljs-comment"># 512-&gt;2048</span>
+            nn.ReLU(),
+            nn.Linear(<span class="hljs-number">2048</span>, <span class="hljs-number">1024</span>),  <span class="hljs-comment"># 512-&gt;1024</span>
+            nn.ReLU()
+        )
+        
+        <span class="hljs-comment"># 合并分支 - 层大小增大4倍</span>
+        <span class="hljs-variable language_">self</span>.combined_net = nn.Sequential(
+            nn.Linear(<span class="hljs-number">1024</span> + <span class="hljs-number">512</span>, <span class="hljs-number">2048</span>),  <span class="hljs-comment"># 256+128-&gt;1024+512, 512-&gt;2048</span>
+            nn.ReLU(),
+            nn.Linear(<span class="hljs-number">2048</span>, features_dim),  <span class="hljs-comment"># 512-&gt;2048</span>
+            nn.ReLU()
+        )
+        
+        <span class="hljs-comment"># 权重初始化</span>
+        <span class="hljs-variable language_">self</span>.apply(<span class="hljs-variable language_">self</span>._init_weights)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_init_weights</span>(<span class="hljs-params">self, module</span>):
+        <span class="hljs-string">&quot;&quot;&quot;更稳定的权重初始化&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(module, nn.Linear):
+            nn.init.orthogonal_(module.weight, gain=nn.init.calculate_gain(<span class="hljs-string">&#x27;relu&#x27;</span>))
+            <span class="hljs-keyword">if</span> module.bias <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+                nn.init.constant_(module.bias, <span class="hljs-number">0.0</span>)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, observations</span>):
+        <span class="hljs-comment"># 确保输入有正确的维度 [batch_size, features]</span>
+        <span class="hljs-keyword">if</span> observations.dim() == <span class="hljs-number">1</span>:
+            observations = observations.unsqueeze(<span class="hljs-number">0</span>)  <span class="hljs-comment"># 添加batch维度</span>
+            
+        <span class="hljs-comment"># 获取总特征维度</span>
+        total_size = observations.size(<span class="hljs-number">1</span>)  <span class="hljs-comment"># 使用.size()而不是.shape[]更安全</span>
+        
+        <span class="hljs-comment"># 动态计算棋盘大小n（如果未在__init__中计算）</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-built_in">hasattr</span>(<span class="hljs-variable language_">self</span>, <span class="hljs-string">&#x27;n&#x27;</span>):
+            <span class="hljs-comment"># 观察空间结构: 已用点(n*n) + 当前点(n*n) + 线段状态(n*n) + [E0,E1,phase/2,turn](4)</span>
+            total_dim = observations.size(<span class="hljs-number">1</span>)
+            <span class="hljs-variable language_">self</span>.n = <span class="hljs-built_in">int</span>(math.sqrt((total_dim - <span class="hljs-number">4</span>) / <span class="hljs-number">3</span>))
+            <span class="hljs-variable language_">self</span>.segment_size = <span class="hljs-variable language_">self</span>.n * <span class="hljs-variable language_">self</span>.n
+        
+        <span class="hljs-comment"># 点信息部分: 已用点 + 当前点 + 最后4个值</span>
+        point_info = observations[:, :<span class="hljs-number">2</span>*<span class="hljs-variable language_">self</span>.segment_size + <span class="hljs-number">4</span>]
+        
+        <span class="hljs-comment"># 线段状态部分: 中间部分</span>
+        seg_info = observations[:, <span class="hljs-number">2</span>*<span class="hljs-variable language_">self</span>.segment_size:<span class="hljs-number">2</span>*<span class="hljs-variable language_">self</span>.segment_size + <span class="hljs-variable language_">self</span>.segment_size]
+        seg_info = seg_info.view(-<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-variable language_">self</span>.n, <span class="hljs-variable language_">self</span>.n)  <span class="hljs-comment"># [batch, channels, height, width]</span>
+        
+        <span class="hljs-comment"># 处理不同部分</span>
+        point_out = <span class="hljs-variable language_">self</span>.point_net(point_info)
+        seg_out = <span class="hljs-variable language_">self</span>.segment_net(seg_info)
+        
+        <span class="hljs-comment"># 合并</span>
+        combined = torch.cat((point_out, seg_out), dim=<span class="hljs-number">1</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>.combined_net(combined)
+
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MaskablePolicy</span>(<span class="hljs-title class_ inherited__">MaskableActorCriticPolicy</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, *args, **kwargs</span>):
+        <span class="hljs-built_in">super</span>().__init__(*args, **kwargs)
+        
+        <span class="hljs-comment"># 为优化器设置参数</span>
+        <span class="hljs-variable language_">self</span>.optimizer_class = torch.optim.AdamW
+        <span class="hljs-variable language_">self</span>.optimizer_kwargs = {
+            <span class="hljs-string">&#x27;weight_decay&#x27;</span>: <span class="hljs-number">1e-4</span>,  <span class="hljs-comment"># 权重衰减</span>
+            <span class="hljs-string">&#x27;amsgrad&#x27;</span>: <span class="hljs-literal">True</span>,  <span class="hljs-comment"># 使用改进的Adam变体</span>
+        }
+
+<span class="hljs-comment"># 修复回调函数</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">TrainingCallback</span>(<span class="hljs-title class_ inherited__">BaseCallback</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, eval_interval, save_path, verbose=<span class="hljs-number">1</span></span>):
+        <span class="hljs-built_in">super</span>().__init__(verbose)
+        <span class="hljs-variable language_">self</span>.exploration_bonus = <span class="hljs-number">0.1</span>  <span class="hljs-comment"># 探索奖励系数</span>
+        <span class="hljs-variable language_">self</span>.best_win_rate = <span class="hljs-number">0.0</span>
+        <span class="hljs-variable language_">self</span>.eval_interval = eval_interval  <span class="hljs-comment"># 评估间隔（环境步数）</span>
+        <span class="hljs-variable language_">self</span>.save_path = save_path
+        <span class="hljs-variable language_">self</span>.best_model_path = os.path.join(save_path, <span class="hljs-string">&quot;best_model&quot;</span>)
+        <span class="hljs-variable language_">self</span>.best_model = <span class="hljs-literal">None</span>
+        <span class="hljs-variable language_">self</span>.n_eval_episodes = <span class="hljs-number">100</span>
+        <span class="hljs-variable language_">self</span>.ent_coef = <span class="hljs-number">0.1</span>
+        <span class="hljs-variable language_">self</span>.initial_ent_coef = <span class="hljs-number">0.2</span>
+        <span class="hljs-variable language_">self</span>.final_ent_coef = <span class="hljs-number">0.1</span>
+        <span class="hljs-variable language_">self</span>.total_timesteps = <span class="hljs-number">3_000_000</span>
+        <span class="hljs-variable language_">self</span>.last_eval_step = <span class="hljs-number">0</span>  <span class="hljs-comment"># 记录上次评估的环境步数</span>
+        <span class="hljs-variable language_">self</span>.entropy_env = <span class="hljs-literal">None</span>  <span class="hljs-comment"># 用于计算熵的单独环境</span>
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_on_training_start</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;在训练开始时创建用于计算熵的环境&quot;&quot;&quot;</span>
+        <span class="hljs-variable language_">self</span>.entropy_env = NoCrossLinesEnv(n=<span class="hljs-number">14</span>, m=<span class="hljs-number">3</span>, alpha=<span class="hljs-number">0.8</span>, Emax=<span class="hljs-number">12</span>)
+        <span class="hljs-variable language_">self</span>.entropy_env = ActionMasker(<span class="hljs-variable language_">self</span>.entropy_env, <span class="hljs-keyword">lambda</span> env: env.action_mask())
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_on_training_end</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;在训练结束时关闭环境&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.entropy_env <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-variable language_">self</span>.entropy_env.close()
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_on_step</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">bool</span>:
+        <span class="hljs-comment"># 更新熵系数</span>
+        progress = <span class="hljs-variable language_">self</span>.num_timesteps / <span class="hljs-variable language_">self</span>.total_timesteps
+        <span class="hljs-variable language_">self</span>.ent_coef = <span class="hljs-variable language_">self</span>.final_ent_coef + (<span class="hljs-variable language_">self</span>.initial_ent_coef - <span class="hljs-variable language_">self</span>.final_ent_coef) * (<span class="hljs-number">1</span> - progress)
+        <span class="hljs-variable language_">self</span>.model.policy.ent_coef = <span class="hljs-variable language_">self</span>.ent_coef
+        
+        <span class="hljs-comment"># 性能差时保持高探索</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.best_win_rate &lt; <span class="hljs-number">0.6</span>:  
+            <span class="hljs-variable language_">self</span>.ent_coef = <span class="hljs-built_in">max</span>(<span class="hljs-variable language_">self</span>.ent_coef, <span class="hljs-number">0.15</span>)
+        
+        <span class="hljs-comment"># 检查是否达到评估间隔（基于环境步数）</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.num_timesteps - <span class="hljs-variable language_">self</span>.last_eval_step &gt;= <span class="hljs-variable language_">self</span>.eval_interval:
+            <span class="hljs-variable language_">self</span>.last_eval_step = <span class="hljs-variable language_">self</span>.num_timesteps
+            
+            <span class="hljs-comment"># 评估当前模型</span>
+            win_rate = <span class="hljs-variable language_">self</span>.evaluate_model()
+            
+            <span class="hljs-comment"># 更新最佳胜率</span>
+            <span class="hljs-variable language_">self</span>.best_win_rate = <span class="hljs-built_in">max</span>(<span class="hljs-variable language_">self</span>.best_win_rate, win_rate)
+            
+            <span class="hljs-comment"># 保存当前模型检查点</span>
+            current_model_path = os.path.join(<span class="hljs-variable language_">self</span>.save_path, <span class="hljs-string">f&quot;model_<span class="hljs-subst">{self.num_timesteps}</span>&quot;</span>)
+            <span class="hljs-variable language_">self</span>.model.save(current_model_path)
+            
+            <span class="hljs-comment"># 第一次评估 - 没有最佳模型</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.best_model <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">if</span> win_rate &gt; <span class="hljs-number">0.5</span>:
+                    <span class="hljs-variable language_">self</span>.model.save(<span class="hljs-variable language_">self</span>.best_model_path)
+                    <span class="hljs-variable language_">self</span>.best_model = MaskablePPO.load(<span class="hljs-variable language_">self</span>.best_model_path, device=<span class="hljs-variable language_">self</span>.model.device)
+                    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Initial best model saved at step <span class="hljs-subst">{self.num_timesteps}</span> with win rate: <span class="hljs-subst">{win_rate:<span class="hljs-number">.2</span>f}</span>&quot;</span>)
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Initial win rate too low: <span class="hljs-subst">{win_rate:<span class="hljs-number">.2</span>f}</span> at step <span class="hljs-subst">{self.num_timesteps}</span>, not saving as best model&quot;</span>)
+            <span class="hljs-keyword">else</span>:
+                <span class="hljs-comment"># 后续评估 - 与最佳模型比较</span>
+                <span class="hljs-keyword">if</span> win_rate &gt; <span class="hljs-number">0.5</span>:
+                    <span class="hljs-variable language_">self</span>.model.save(<span class="hljs-variable language_">self</span>.best_model_path)
+                    <span class="hljs-variable language_">self</span>.best_model = MaskablePPO.load(<span class="hljs-variable language_">self</span>.best_model_path, device=<span class="hljs-variable language_">self</span>.model.device)
+                    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;New best model saved at step <span class="hljs-subst">{self.num_timesteps}</span> with win rate: <span class="hljs-subst">{win_rate:<span class="hljs-number">.2</span>f}</span> against previous best&quot;</span>)
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Current model win rate: <span class="hljs-subst">{win_rate:<span class="hljs-number">.2</span>f}</span> at step <span class="hljs-subst">{self.num_timesteps}</span> against best model - not better&quot;</span>)
+            
+            <span class="hljs-comment"># 记录评估结果</span>
+            <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(os.path.join(<span class="hljs-variable language_">self</span>.save_path, <span class="hljs-string">&quot;evaluation_log.txt&quot;</span>), <span class="hljs-string">&quot;a&quot;</span>) <span class="hljs-keyword">as</span> f:
+                f.write(<span class="hljs-string">f&quot;Step: <span class="hljs-subst">{self.num_timesteps}</span>, Win Rate: <span class="hljs-subst">{win_rate:<span class="hljs-number">.4</span>f}</span>, Ent Coef: <span class="hljs-subst">{self.ent_coef:<span class="hljs-number">.4</span>f}</span>\n&quot;</span>)
+        
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">evaluate_model</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;评估当前模型对战最佳模型（或随机策略）的胜率&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.best_model <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Evaluating against random policy...&quot;</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._evaluate_against_random()
+        <span class="hljs-keyword">else</span>:
+            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Evaluating against best model...&quot;</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>._evaluate_against_best()
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_evaluate_against_random</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;评估当前模型对战随机策略的胜率&quot;&quot;&quot;</span>
+        wins = <span class="hljs-number">0</span>
+        
+        <span class="hljs-comment"># 创建评估环境</span>
+        eval_env = DummyVecEnv([<span class="hljs-variable language_">self</span>.make_eval_env()])
+        
+        <span class="hljs-keyword">for</span> ep <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-variable language_">self</span>.n_eval_episodes):
+            <span class="hljs-comment"># 随机决定当前模型扮演哪个玩家</span>
+            model_player = np.random.choice([<span class="hljs-number">0</span>, <span class="hljs-number">1</span>])
+            <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.verbose &gt; <span class="hljs-number">1</span>:
+                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Episode <span class="hljs-subst">{ep+<span class="hljs-number">1</span>}</span>/<span class="hljs-subst">{self.n_eval_episodes}</span>: Model as Player <span class="hljs-subst">{model_player}</span>&quot;</span>)
+            
+            obs = eval_env.reset()
+            done = [<span class="hljs-literal">False</span>]
+            
+            <span class="hljs-keyword">while</span> <span class="hljs-keyword">not</span> done[<span class="hljs-number">0</span>]:
+                <span class="hljs-comment"># 获取当前玩家</span>
+                current_player = <span class="hljs-built_in">int</span>(obs[<span class="hljs-number">0</span>][-<span class="hljs-number">1</span>])
+                
+                <span class="hljs-keyword">if</span> current_player == model_player:
+                    <span class="hljs-comment"># 当前模型决策</span>
+                    action_masks = get_action_masks(eval_env)
+                    action, _ = <span class="hljs-variable language_">self</span>.model.predict(obs, action_masks=action_masks, deterministic=<span class="hljs-literal">True</span>)
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-comment"># 随机策略决策</span>
+                    action_masks = get_action_masks(eval_env)
+                    legal_actions = np.where(action_masks[<span class="hljs-number">0</span>])[<span class="hljs-number">0</span>]
+                    action = [np.random.choice(legal_actions)] <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(legal_actions) &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> [<span class="hljs-number">0</span>]
+                
+                obs, _, done, info = eval_env.step(action)
+            
+            <span class="hljs-comment"># 检查胜负</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-string">&#x27;winner&#x27;</span> <span class="hljs-keyword">in</span> info[<span class="hljs-number">0</span>] <span class="hljs-keyword">and</span> info[<span class="hljs-number">0</span>][<span class="hljs-string">&#x27;winner&#x27;</span>] == model_player:
+                wins += <span class="hljs-number">1</span>
+        
+        eval_env.close()
+        win_rate = wins / <span class="hljs-variable language_">self</span>.n_eval_episodes
+        
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Win rate against random: <span class="hljs-subst">{win_rate:<span class="hljs-number">.4</span>f}</span>&quot;</span>)
+        <span class="hljs-keyword">return</span> win_rate
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_evaluate_against_best</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;评估当前模型对战最佳模型的胜率&quot;&quot;&quot;</span>
+        wins = <span class="hljs-number">0</span>
+        
+        <span class="hljs-comment"># 创建评估环境</span>
+        eval_env = DummyVecEnv([<span class="hljs-variable language_">self</span>.make_eval_env()])
+        
+        <span class="hljs-keyword">for</span> ep <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-variable language_">self</span>.n_eval_episodes):
+            <span class="hljs-comment"># 随机决定当前模型扮演哪个玩家</span>
+            model_player = np.random.choice([<span class="hljs-number">0</span>, <span class="hljs-number">1</span>])
+            best_player = <span class="hljs-number">1</span> - model_player
+            
+            <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.verbose &gt; <span class="hljs-number">1</span>:
+                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Episode <span class="hljs-subst">{ep+<span class="hljs-number">1</span>}</span>/<span class="hljs-subst">{self.n_eval_episodes}</span>: &quot;</span>
+                      <span class="hljs-string">f&quot;Current Model as Player <span class="hljs-subst">{model_player}</span>, Best Model as Player <span class="hljs-subst">{best_player}</span>&quot;</span>)
+            
+            obs = eval_env.reset()
+            done = [<span class="hljs-literal">False</span>]
+            
+            <span class="hljs-keyword">while</span> <span class="hljs-keyword">not</span> done[<span class="hljs-number">0</span>]:
+                <span class="hljs-comment"># 获取当前玩家</span>
+                current_player = <span class="hljs-built_in">int</span>(obs[<span class="hljs-number">0</span>][-<span class="hljs-number">1</span>])
+                
+                <span class="hljs-keyword">if</span> current_player == model_player:
+                    <span class="hljs-comment"># 当前模型决策</span>
+                    action_masks = get_action_masks(eval_env)
+                    action, _ = <span class="hljs-variable language_">self</span>.model.predict(obs, action_masks=action_masks, deterministic=<span class="hljs-literal">True</span>)
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-comment"># 最佳模型决策</span>
+                    action_masks = get_action_masks(eval_env)
+                    action, _ = <span class="hljs-variable language_">self</span>.best_model.predict(obs, action_masks=action_masks, deterministic=<span class="hljs-literal">True</span>)
+                
+                obs, _, done, info = eval_env.step(action)
+            
+            <span class="hljs-comment"># 检查胜负</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-string">&#x27;winner&#x27;</span> <span class="hljs-keyword">in</span> info[<span class="hljs-number">0</span>] <span class="hljs-keyword">and</span> info[<span class="hljs-number">0</span>][<span class="hljs-string">&#x27;winner&#x27;</span>] == model_player:
+                wins += <span class="hljs-number">1</span>
+        
+        eval_env.close()
+        win_rate = wins / <span class="hljs-variable language_">self</span>.n_eval_episodes
+        
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Win rate against best model: <span class="hljs-subst">{win_rate:<span class="hljs-number">.4</span>f}</span>&quot;</span>)
+        <span class="hljs-keyword">return</span> win_rate
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_calculate_policy_entropy</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-string">&quot;&quot;&quot;计算策略的熵（探索程度）&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.entropy_env <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0.0</span>
+        
+        obs, _ = <span class="hljs-variable language_">self</span>.entropy_env.reset()
+        entropies = []
+        
+        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">100</span>):  <span class="hljs-comment"># 采样100个状态</span>
+            action_masks = <span class="hljs-variable language_">self</span>.entropy_env.action_masks()
+            <span class="hljs-comment"># 确保观测是张量并移动到正确设备</span>
+            obs_tensor = torch.as_tensor(obs).<span class="hljs-built_in">float</span>().to(<span class="hljs-variable language_">self</span>.model.device)
+            
+            <span class="hljs-comment"># 确保观测有正确的维度</span>
+            <span class="hljs-keyword">if</span> obs_tensor.dim() == <span class="hljs-number">1</span>:
+                obs_tensor = obs_tensor.unsqueeze(<span class="hljs-number">0</span>)
+            
+            <span class="hljs-keyword">with</span> torch.no_grad():
+                dist = <span class="hljs-variable language_">self</span>.model.policy.get_distribution(obs_tensor)
+                entropy = dist.entropy().mean().item()
+                entropies.append(entropy)
+            
+            <span class="hljs-comment"># 随机动作推进环境</span>
+            legal_actions = np.where(action_masks)[<span class="hljs-number">0</span>]
+            action = np.random.choice(legal_actions) <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(legal_actions) &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+            obs, _, _, _, _ = <span class="hljs-variable language_">self</span>.entropy_env.step(action)
+        
+        <span class="hljs-keyword">return</span> np.mean(entropies) <span class="hljs-keyword">if</span> entropies <span class="hljs-keyword">else</span> <span class="hljs-number">0.0</span>
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">make_eval_env</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-keyword">def</span> <span class="hljs-title function_">_init</span>():
+            env = NoCrossLinesEnv(n=<span class="hljs-number">14</span>, m=<span class="hljs-number">3</span>, alpha=<span class="hljs-number">0.8</span>, Emax=<span class="hljs-number">12</span>)
+            env = ActionMasker(env, <span class="hljs-keyword">lambda</span> env: env.action_mask())
+            <span class="hljs-keyword">return</span> env
+        <span class="hljs-keyword">return</span> _init
+
+<span class="hljs-comment"># 优化环境创建函数</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">make_env</span>(<span class="hljs-params">n=<span class="hljs-number">14</span>, m=<span class="hljs-number">3</span>, alpha=<span class="hljs-number">0.8</span>, Emax=<span class="hljs-number">12</span></span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_init</span>():
+        env = NoCrossLinesEnv(n=n, m=m, alpha=alpha, Emax=Emax)
+        <span class="hljs-comment"># 添加动作掩码包装器</span>
+        env = ActionMasker(env, <span class="hljs-keyword">lambda</span> env: env.action_mask())
+        <span class="hljs-keyword">return</span> env
+    <span class="hljs-keyword">return</span> _init
+
+<span class="hljs-comment"># 主训练函数优化</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">train_model</span>():
+    <span class="hljs-comment"># 增加并行环境数量</span>
+    n_envs = <span class="hljs-number">64</span>  <span class="hljs-comment"># 减少并行环境数，避免内存问题</span>
+    n_steps = <span class="hljs-number">612</span>
+    <span class="hljs-comment"># 增加批次大小以更好地利用GPU</span>
+    batch_size = <span class="hljs-number">8192</span>
+    total_timesteps = <span class="hljs-number">5_000_000</span>
+    save_path = <span class="hljs-string">&quot;saved_models&quot;</span>
+    
+    <span class="hljs-comment"># 使用多进程向量环境</span>
+    env = SubprocVecEnv([make_env() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n_envs)])
+    
+    <span class="hljs-comment"># 优化学习率（降低初始值）</span>
+    initial_lr = <span class="hljs-number">1e-4</span>
+    final_lr = <span class="hljs-number">1e-6</span>
+    
+    <span class="hljs-comment"># 优化熵系数（保持更多探索）</span>
+    initial_ent_coef = <span class="hljs-number">0.2</span>
+    final_ent_coef = <span class="hljs-number">0.1</span>
+    
+    <span class="hljs-comment"># 策略参数调整 - 增大网络结构4倍</span>
+    policy_kwargs = {
+        <span class="hljs-string">&quot;features_extractor_class&quot;</span>: CustomCNN,
+        <span class="hljs-string">&quot;features_extractor_kwargs&quot;</span>: {<span class="hljs-string">&quot;features_dim&quot;</span>: <span class="hljs-number">1024</span>},  <span class="hljs-comment"># 特征维度从256增大到1024</span>
+        <span class="hljs-string">&quot;net_arch&quot;</span>: [<span class="hljs-built_in">dict</span>(pi=[<span class="hljs-number">2048</span>, <span class="hljs-number">1024</span>], vf=[<span class="hljs-number">2048</span>, <span class="hljs-number">1024</span>])],  <span class="hljs-comment"># 网络层大小增大4倍 [512,256]-&gt;[2048,1024]</span>
+        <span class="hljs-string">&quot;activation_fn&quot;</span>: nn.ReLU,
+        <span class="hljs-string">&quot;optimizer_class&quot;</span>: torch.optim.Adam,
+        <span class="hljs-string">&quot;optimizer_kwargs&quot;</span>: {<span class="hljs-string">&quot;eps&quot;</span>: <span class="hljs-number">1e-5</span>}
+    }
+    
+    <span class="hljs-comment"># 使用GPU加速</span>
+    device = <span class="hljs-string">&quot;cuda&quot;</span> <span class="hljs-keyword">if</span> torch.cuda.is_available() <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;auto&quot;</span>
+    
+    <span class="hljs-comment"># 创建模型</span>
+    model = MaskablePPO(
+        MaskablePolicy,
+        env,
+        policy_kwargs=policy_kwargs,
+        n_steps=n_steps,
+        batch_size=batch_size,
+        learning_rate=initial_lr,
+        verbose=<span class="hljs-number">1</span>,
+        tensorboard_log=<span class="hljs-string">&quot;./logs/&quot;</span>,
+        device=device,
+        n_epochs=<span class="hljs-number">10</span>,
+        clip_range=<span class="hljs-number">0.2</span>,
+        ent_coef=initial_ent_coef,
+        vf_coef=<span class="hljs-number">0.8</span>,
+        max_grad_norm=<span class="hljs-number">0.8</span>,
+        target_kl=<span class="hljs-number">0.05</span>,
+        gae_lambda=<span class="hljs-number">0.92</span>
+    )
+    
+    <span class="hljs-comment"># 创建回调</span>
+    callback = TrainingCallback(
+        eval_interval=<span class="hljs-number">50_000</span>,  <span class="hljs-comment"># 增加评估间隔，减少频率</span>
+        save_path=save_path, 
+        verbose=<span class="hljs-number">1</span>
+    )
+    callback.total_timesteps = total_timesteps
+    callback.initial_ent_coef = initial_ent_coef
+    callback.final_ent_coef = final_ent_coef
+    
+    <span class="hljs-comment"># 手动实现学习率调度</span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">update_learning_rate</span>(<span class="hljs-params">progress</span>):
+        <span class="hljs-string">&quot;&quot;&quot;更新学习率（线性衰减）&quot;&quot;&quot;</span>
+        new_lr = initial_lr - (initial_lr - final_lr) * progress
+        <span class="hljs-keyword">for</span> param_group <span class="hljs-keyword">in</span> model.policy.optimizer.param_groups:
+            param_group[<span class="hljs-string">&#x27;lr&#x27;</span>] = new_lr
+        <span class="hljs-keyword">return</span> new_lr
+    
+    <span class="hljs-comment"># 添加学习率更新到回调</span>
+    original_on_step = callback._on_step
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">on_step_with_lr_update</span>():
+        <span class="hljs-comment"># 更新学习率</span>
+        progress = callback.num_timesteps / total_timesteps
+        new_lr = update_learning_rate(progress)
+        
+        <span class="hljs-comment"># 每50,000步打印一次学习率</span>
+        <span class="hljs-keyword">if</span> callback.num_timesteps % <span class="hljs-number">50_000</span> == <span class="hljs-number">0</span>:
+            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Step <span class="hljs-subst">{callback.num_timesteps}</span>: Learning rate updated to <span class="hljs-subst">{new_lr:<span class="hljs-number">.2</span>e}</span>&quot;</span>)
+        
+        <span class="hljs-comment"># 调用原始_on_step方法</span>
+        <span class="hljs-keyword">return</span> original_on_step()
+    
+    callback._on_step = on_step_with_lr_update
+    
+    start_time = time.time()
+    model.learn(
+        total_timesteps=total_timesteps,
+        callback=callback,
+        progress_bar=<span class="hljs-literal">True</span>
+    )
+    training_time = time.time() - start_time
+    
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Training completed in <span class="hljs-subst">{training_time:<span class="hljs-number">.2</span>f}</span> seconds&quot;</span>)
+    model.save(os.path.join(save_path, <span class="hljs-string">&quot;final_model&quot;</span>))
+    
+    <span class="hljs-comment"># 保存最佳模型</span>
+    <span class="hljs-keyword">if</span> callback.best_model <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+        best_final_path = os.path.join(save_path, <span class="hljs-string">&quot;best_final_model&quot;</span>)
+        callback.best_model.save(best_final_path)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Best model saved to <span class="hljs-subst">{best_final_path}</span>&quot;</span>)
+    
+    <span class="hljs-comment"># 关闭环境</span>
+    env.close()
+
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:
+    <span class="hljs-comment"># 启用CuDNN自动调优</span>
+    torch.backends.cudnn.benchmark = <span class="hljs-literal">True</span>
+    train_model()
+</code></pre></div>
+<p>训练之后得到模型</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/image-20250708163444945.png" data-name="image-20250708163444945.png" data-alt="image-20250708163444945"><img class="md-img" src="/img/Program/assets/image-20250708163444945.png" alt="image-20250708163444945" loading="lazy" decoding="async"><span class="md-caption">image-20250708163444945</span></span>
+<h3 class="md-h md-h3" id="模型部署与client编写"><span class="md-hash" aria-hidden="true">### </span><span class="md-h-text">模型部署与client编写</span></h3>
+<p>为了方便多段部署，首先我们需要将模型导出为ONNX：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">179 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python"><span class="hljs-keyword">import</span> torch
+<span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn
+<span class="hljs-keyword">import</span> math
+<span class="hljs-keyword">from</span> sb3_contrib <span class="hljs-keyword">import</span> MaskablePPO
+<span class="hljs-keyword">from</span> sb3_contrib.common.maskable.policies <span class="hljs-keyword">import</span> MaskableActorCriticPolicy
+<span class="hljs-keyword">from</span> stable_baselines3.common.torch_layers <span class="hljs-keyword">import</span> BaseFeaturesExtractor
+<span class="hljs-keyword">from</span> game_env <span class="hljs-keyword">import</span> NoCrossLinesEnv
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomCNN</span>(<span class="hljs-title class_ inherited__">BaseFeaturesExtractor</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, observation_space, features_dim=<span class="hljs-number">1024</span></span>):  <span class="hljs-comment"># 特征维度从256增大到1024</span>
+        <span class="hljs-built_in">super</span>().__init__(observation_space, features_dim)
+        <span class="hljs-variable language_">self</span>.n_input = observation_space.shape[<span class="hljs-number">0</span>]
+        
+        <span class="hljs-comment"># 从观察空间推断棋盘大小 n</span>
+        total_dim = observation_space.shape[<span class="hljs-number">0</span>]
+        <span class="hljs-variable language_">self</span>.n = <span class="hljs-number">14</span>
+        <span class="hljs-variable language_">self</span>.segment_size = <span class="hljs-variable language_">self</span>.n * <span class="hljs-variable language_">self</span>.n
+        
+        <span class="hljs-comment"># 点信息部分: 已用点 + 当前点 + 能量/阶段/回合信息</span>
+        point_info_dim = <span class="hljs-number">2</span> * <span class="hljs-variable language_">self</span>.segment_size + <span class="hljs-number">4</span>
+        
+        <span class="hljs-comment"># 线段状态部分: n x n 网格 - 通道数增大4倍</span>
+        <span class="hljs-variable language_">self</span>.segment_net = nn.Sequential(
+            nn.Conv2d(<span class="hljs-number">1</span>, <span class="hljs-number">64</span>, kernel_size=<span class="hljs-number">3</span>, stride=<span class="hljs-number">1</span>, padding=<span class="hljs-number">1</span>),  <span class="hljs-comment"># 16-&gt;64</span>
+            nn.ReLU(),
+            nn.MaxPool2d(<span class="hljs-number">2</span>),
+            nn.Conv2d(<span class="hljs-number">64</span>, <span class="hljs-number">128</span>, kernel_size=<span class="hljs-number">3</span>, stride=<span class="hljs-number">1</span>, padding=<span class="hljs-number">1</span>),  <span class="hljs-comment"># 32-&gt;128</span>
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(<span class="hljs-number">128</span> * (<span class="hljs-variable language_">self</span>.n//<span class="hljs-number">2</span>) * (<span class="hljs-variable language_">self</span>.n//<span class="hljs-number">2</span>), <span class="hljs-number">512</span>),  <span class="hljs-comment"># 128-&gt;512</span>
+            nn.ReLU()
+        )
+        
+        <span class="hljs-comment"># 点信息处理 - 层大小增大4倍</span>
+        <span class="hljs-variable language_">self</span>.point_net = nn.Sequential(
+            nn.Linear(point_info_dim, <span class="hljs-number">2048</span>),  <span class="hljs-comment"># 512-&gt;2048</span>
+            nn.ReLU(),
+            nn.Linear(<span class="hljs-number">2048</span>, <span class="hljs-number">1024</span>),  <span class="hljs-comment"># 512-&gt;1024</span>
+            nn.ReLU()
+        )
+        
+        <span class="hljs-comment"># 合并分支 - 层大小增大4倍</span>
+        <span class="hljs-variable language_">self</span>.combined_net = nn.Sequential(
+            nn.Linear(<span class="hljs-number">1024</span> + <span class="hljs-number">512</span>, <span class="hljs-number">2048</span>),  <span class="hljs-comment"># 256+128-&gt;1024+512, 512-&gt;2048</span>
+            nn.ReLU(),
+            nn.Linear(<span class="hljs-number">2048</span>, features_dim),  <span class="hljs-comment"># 512-&gt;2048</span>
+            nn.ReLU()
+        )
+        
+        <span class="hljs-comment"># 权重初始化</span>
+        <span class="hljs-variable language_">self</span>.apply(<span class="hljs-variable language_">self</span>._init_weights)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_init_weights</span>(<span class="hljs-params">self, module</span>):
+        <span class="hljs-string">&quot;&quot;&quot;更稳定的权重初始化&quot;&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(module, nn.Linear):
+            nn.init.orthogonal_(module.weight, gain=nn.init.calculate_gain(<span class="hljs-string">&#x27;relu&#x27;</span>))
+            <span class="hljs-keyword">if</span> module.bias <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+                nn.init.constant_(module.bias, <span class="hljs-number">0.0</span>)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, observations</span>):
+        <span class="hljs-comment"># 确保输入有正确的维度 [batch_size, features]</span>
+        <span class="hljs-keyword">if</span> observations.dim() == <span class="hljs-number">1</span>:
+            observations = observations.unsqueeze(<span class="hljs-number">0</span>)  <span class="hljs-comment"># 添加batch维度</span>
+            
+        <span class="hljs-comment"># 获取总特征维度</span>
+        total_size = observations.size(<span class="hljs-number">1</span>)  <span class="hljs-comment"># 使用.size()而不是.shape[]更安全</span>
+        
+        <span class="hljs-comment"># 动态计算棋盘大小n（如果未在__init__中计算）</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-built_in">hasattr</span>(<span class="hljs-variable language_">self</span>, <span class="hljs-string">&#x27;n&#x27;</span>):
+            <span class="hljs-comment"># 观察空间结构: 已用点(n*n) + 当前点(n*n) + 线段状态(n*n) + [E0,E1,phase/2,turn](4)</span>
+            total_dim = observations.size(<span class="hljs-number">1</span>)
+            <span class="hljs-variable language_">self</span>.n = <span class="hljs-built_in">int</span>(math.sqrt((total_dim - <span class="hljs-number">4</span>) / <span class="hljs-number">3</span>))
+            <span class="hljs-variable language_">self</span>.segment_size = <span class="hljs-variable language_">self</span>.n * <span class="hljs-variable language_">self</span>.n
+        
+        <span class="hljs-comment"># 点信息部分: 已用点 + 当前点 + 最后4个值</span>
+        point_info = observations[:, :<span class="hljs-number">2</span>*<span class="hljs-variable language_">self</span>.segment_size + <span class="hljs-number">4</span>]
+        
+        <span class="hljs-comment"># 线段状态部分: 中间部分</span>
+        seg_info = observations[:, <span class="hljs-number">2</span>*<span class="hljs-variable language_">self</span>.segment_size:<span class="hljs-number">2</span>*<span class="hljs-variable language_">self</span>.segment_size + <span class="hljs-variable language_">self</span>.segment_size]
+        seg_info = seg_info.view(-<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-variable language_">self</span>.n, <span class="hljs-variable language_">self</span>.n)  <span class="hljs-comment"># [batch, channels, height, width]</span>
+        
+        <span class="hljs-comment"># 处理不同部分</span>
+        point_out = <span class="hljs-variable language_">self</span>.point_net(point_info)
+        seg_out = <span class="hljs-variable language_">self</span>.segment_net(seg_info)
+        
+        <span class="hljs-comment"># 合并</span>
+        combined = torch.cat((point_out, seg_out), dim=<span class="hljs-number">1</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>.combined_net(combined)
+
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyMaskablePolicy</span>(<span class="hljs-title class_ inherited__">MaskableActorCriticPolicy</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, *args, **kwargs</span>):
+        <span class="hljs-built_in">super</span>().__init__(*args, **kwargs)
+        
+        <span class="hljs-comment"># 为优化器设置参数</span>
+        <span class="hljs-variable language_">self</span>.optimizer_class = torch.optim.AdamW
+        <span class="hljs-variable language_">self</span>.optimizer_kwargs = {
+            <span class="hljs-string">&#x27;weight_decay&#x27;</span>: <span class="hljs-number">1e-4</span>,  <span class="hljs-comment"># 权重衰减</span>
+            <span class="hljs-string">&#x27;amsgrad&#x27;</span>: <span class="hljs-literal">True</span>,  <span class="hljs-comment"># 使用改进的Adam变体</span>
+        }
+<span class="hljs-comment"># 3) 和训练时**一模一样**的 policy_kwargs</span>
+policy_kwargs = {
+    <span class="hljs-string">&quot;features_extractor_class&quot;</span>: CustomCNN,
+    <span class="hljs-string">&quot;features_extractor_kwargs&quot;</span>: {<span class="hljs-string">&quot;features_dim&quot;</span>: <span class="hljs-number">1024</span>},
+    <span class="hljs-string">&quot;net_arch&quot;</span>: [<span class="hljs-built_in">dict</span>(pi=[<span class="hljs-number">2048</span>,<span class="hljs-number">1024</span>], vf=[<span class="hljs-number">2048</span>,<span class="hljs-number">1024</span>])],
+    <span class="hljs-string">&quot;activation_fn&quot;</span>: nn.ReLU,
+    <span class="hljs-string">&quot;optimizer_class&quot;</span>: torch.optim.Adam,
+    <span class="hljs-string">&quot;optimizer_kwargs&quot;</span>: {<span class="hljs-string">&quot;eps&quot;</span>: <span class="hljs-number">1e-5</span>},
+}
+
+<span class="hljs-comment"># 4) 为导出绕过分布/采样逻辑，直接只做前向：</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ExportPolicy</span>(nn.Module):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, base_policy</span>):
+        <span class="hljs-built_in">super</span>().__init__()
+        <span class="hljs-variable language_">self</span>.extractor = base_policy.features_extractor
+        <span class="hljs-variable language_">self</span>.mlp       = base_policy.mlp_extractor
+        <span class="hljs-variable language_">self</span>.act_net   = base_policy.action_net
+        <span class="hljs-variable language_">self</span>.val_net   = base_policy.value_net
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, obs, mask</span>):
+        <span class="hljs-comment"># obs: [B, obs_dim], mask: [B, n_actions] bool</span>
+        features = <span class="hljs-variable language_">self</span>.extractor(obs)
+        latent_pi, latent_vf = <span class="hljs-variable language_">self</span>.mlp(features)
+        logits = <span class="hljs-variable language_">self</span>.act_net(latent_pi)
+        <span class="hljs-comment"># 屏蔽非法动作</span>
+        logits = logits.masked_fill(~mask, -<span class="hljs-number">1e9</span>)
+        values = <span class="hljs-variable language_">self</span>.val_net(latent_vf)
+        <span class="hljs-keyword">return</span> logits, values
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">export_to_onnx</span>(<span class="hljs-params">
+    model_path: <span class="hljs-built_in">str</span> = <span class="hljs-string">&quot;best_model.zip&quot;</span>,
+    onnx_path:  <span class="hljs-built_in">str</span> = <span class="hljs-string">&quot;policy.onnx&quot;</span>,
+</span>):
+    <span class="hljs-comment"># a) 创建 env 拿到 obs_dim, act_dim</span>
+    env = NoCrossLinesEnv(n=<span class="hljs-number">14</span>, m=<span class="hljs-number">3</span>, alpha=<span class="hljs-number">0.8</span>, Emax=<span class="hljs-number">12</span>)
+    obs_dim = env.observation_space.shape[<span class="hljs-number">0</span>]
+    act_dim = env.action_space.n
+
+    <span class="hljs-comment"># b) 加载带 custom_objects</span>
+    custom_objects = {
+        <span class="hljs-string">&quot;policy_class&quot;</span>: MyMaskablePolicy,
+        <span class="hljs-string">&quot;policy_kwargs&quot;</span>: policy_kwargs,
+        <span class="hljs-string">&quot;lr_schedule&quot;</span>:   <span class="hljs-keyword">lambda</span> _: <span class="hljs-number">1e-4</span>,
+        <span class="hljs-string">&quot;clip_range&quot;</span>:    <span class="hljs-keyword">lambda</span> _: <span class="hljs-number">0.2</span>,
+    }
+    model: MaskablePPO = MaskablePPO.load(
+        model_path,
+        custom_objects=custom_objects,
+        device=<span class="hljs-string">&quot;cpu&quot;</span>,
+    )
+    base_policy = model.policy
+
+    <span class="hljs-comment"># c) 包装成纯前向网络</span>
+    export_policy = ExportPolicy(base_policy)
+    export_policy.<span class="hljs-built_in">eval</span>()
+
+    <span class="hljs-comment"># d) 构造 dummy inputs</span>
+    dummy_obs  = torch.zeros((<span class="hljs-number">1</span>, obs_dim), dtype=torch.float32)
+    dummy_mask = torch.ones((<span class="hljs-number">1</span>, act_dim), dtype=torch.<span class="hljs-built_in">bool</span>)
+
+    <span class="hljs-comment"># e) 导出 ONNX</span>
+    torch.onnx.export(
+        export_policy,
+        (dummy_obs, dummy_mask),
+        onnx_path,
+        input_names=[<span class="hljs-string">&quot;obs&quot;</span>, <span class="hljs-string">&quot;action_mask&quot;</span>],
+        output_names=[<span class="hljs-string">&quot;logits&quot;</span>, <span class="hljs-string">&quot;values&quot;</span>],
+        dynamic_axes={
+            <span class="hljs-string">&quot;obs&quot;</span>:          {<span class="hljs-number">0</span>: <span class="hljs-string">&quot;batch&quot;</span>},
+            <span class="hljs-string">&quot;action_mask&quot;</span>:  {<span class="hljs-number">0</span>: <span class="hljs-string">&quot;batch&quot;</span>},
+            <span class="hljs-string">&quot;logits&quot;</span>:       {<span class="hljs-number">0</span>: <span class="hljs-string">&quot;batch&quot;</span>},
+            <span class="hljs-string">&quot;values&quot;</span>:       {<span class="hljs-number">0</span>: <span class="hljs-string">&quot;batch&quot;</span>},
+        },
+        opset_version=<span class="hljs-number">13</span>,
+    )
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;✅ 已导出 ONNX 模型到 <span class="hljs-subst">{onnx_path}</span>&quot;</span>)
+
+<span class="hljs-keyword">if</span> __name__==<span class="hljs-string">&quot;__main__&quot;</span>:
+    export_to_onnx()</code></pre></div>
+<p>模型结构图：</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/full_policy_graph.png" data-name="full_policy_graph.png" data-alt="full_policy_graph"><img class="md-img" src="/img/Program/assets/full_policy_graph.png" alt="full_policy_graph" loading="lazy" decoding="async"><span class="md-caption">full_policy_graph</span></span>
+<p>导出之后使用ONNX Runtime即可推理，最后编写client，这里就不列写代码了，来<a class="md-link" href="https://go.xuqinyang.top/" target="_blank" rel="noopener noreferrer">https://go.xuqinyang.top/<span class="md-link-ext" aria-hidden="true">↗</span></a>即可体验</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/image-20250708164121918.png" data-name="image-20250708164121918.png" data-alt="image-20250708164121918"><img class="md-img" src="/img/Program/assets/image-20250708164121918.png" alt="image-20250708164121918" loading="lazy" decoding="async"><span class="md-caption">image-20250708164121918</span></span>
+<p>收工~</p>
+</article></div>
+    <main id="app" class="app" aria-label="terminal"></main>
+  </body>
+</html>

@@ -1,0 +1,148 @@
+var e={html:`<p>很久以前写的代码，那个时候transformer还没有火起来，现在万物皆可transformer了</p>
+<p>使用CNN+LSTM，支持多特征，多步预测，K-折交叉验证</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">145 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python"><span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn
+<span class="hljs-keyword">import</span> torch
+<span class="hljs-keyword">import</span> torch.optim <span class="hljs-keyword">as</span> optim
+<span class="hljs-keyword">from</span> torch.utils.data <span class="hljs-keyword">import</span> DataLoader, Dataset
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">from</span> torch.autograd <span class="hljs-keyword">import</span> Variable
+<span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd
+<span class="hljs-keyword">from</span> torchvision <span class="hljs-keyword">import</span> transforms
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">from</span> sklearn.model_selection <span class="hljs-keyword">import</span> KFold
+<span class="hljs-comment">#os.environ[&#x27;KMP_DUPLICATE_LIB_OK&#x27;] = &#x27;True&#x27;</span>
+
+
+
+<span class="hljs-comment">#全局参数</span>
+feature = [<span class="hljs-string">&#x27;feature1&#x27;</span>,<span class="hljs-string">&#x27;feature2&#x27;</span>,<span class="hljs-string">&#x27;feature3&#x27;</span>,<span class="hljs-string">&#x27;feature4&#x27;</span>] <span class="hljs-comment">#特征列表，要预测的的feature放在第一个位置</span>
+hidden_size = <span class="hljs-number">32</span>  <span class="hljs-comment">#隐藏层的维度</span>
+batch_size = <span class="hljs-number">32</span>  <span class="hljs-comment">#批大小</span>
+sequence = <span class="hljs-number">5</span>  <span class="hljs-comment">#序列长度</span>
+folds = <span class="hljs-number">5</span>  <span class="hljs-comment">#K折交叉验证的折数</span>
+step_num = <span class="hljs-number">100</span> <span class="hljs-comment">#训练的步数</span>
+dataset_name = <span class="hljs-string">&#x27;data.csv&#x27;</span>  <span class="hljs-comment">#数据集名称</span>
+prediction_name = <span class="hljs-string">&#x27;predict.csv&#x27;</span>  <span class="hljs-comment">#预测数据的名称</span>
+
+
+<span class="hljs-comment">#读取数据</span>
+df = pd.read_csv(dataset_name)
+df = df.sort_index(ascending=<span class="hljs-literal">True</span>)
+<span class="hljs-comment">#print(df.head(5))</span>
+<span class="hljs-comment"># 提取feature,并做标准化</span>
+df = df[feature]
+min_max = <span class="hljs-built_in">dict</span>.fromkeys(feature)
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> feature:
+    min_max[i] = [df[i].<span class="hljs-built_in">min</span>(),df[i].<span class="hljs-built_in">max</span>()]
+df = df.apply(<span class="hljs-keyword">lambda</span> x: (x - <span class="hljs-built_in">min</span>(x)) / (<span class="hljs-built_in">max</span>(x) - <span class="hljs-built_in">min</span>(x)))
+total_len = df.shape[<span class="hljs-number">0</span>]
+X = []
+Y = []
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(df.shape[<span class="hljs-number">0</span>] - sequence):
+    X.append(np.array(df.iloc[i:(i + sequence), ].values, dtype=np.float32))
+    Y.append(np.array(df.iloc[(i + sequence), <span class="hljs-number">0</span>], dtype=np.float32))
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Mydataset</span>(<span class="hljs-title class_ inherited__">Dataset</span>):
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, xx, yy, transform=<span class="hljs-literal">None</span></span>):
+        <span class="hljs-variable language_">self</span>.x = xx
+        <span class="hljs-variable language_">self</span>.y = yy
+        <span class="hljs-variable language_">self</span>.tranform = transform
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__getitem__</span>(<span class="hljs-params">self, index</span>):
+        x1 = <span class="hljs-variable language_">self</span>.x[index]
+        y1 = <span class="hljs-variable language_">self</span>.y[index]
+        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.tranform != <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>.tranform(x1), y1
+        <span class="hljs-keyword">return</span> x1, y1
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__len__</span>(<span class="hljs-params">self</span>):
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">len</span>(<span class="hljs-variable language_">self</span>.x)
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CNN_LSTM</span>(nn.Module):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, args</span>):
+        <span class="hljs-built_in">super</span>(CNN_LSTM, <span class="hljs-variable language_">self</span>).__init__()
+        <span class="hljs-variable language_">self</span>.args = args
+        <span class="hljs-variable language_">self</span>.relu = nn.ReLU(inplace=<span class="hljs-literal">True</span>)
+        <span class="hljs-variable language_">self</span>.conv = nn.Sequential(
+            nn.Conv1d(in_channels=args[<span class="hljs-string">&#x27;in_channels&#x27;</span>], out_channels=args[<span class="hljs-string">&#x27;out_channels&#x27;</span>], kernel_size=<span class="hljs-number">3</span>),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=<span class="hljs-number">3</span>, stride=<span class="hljs-number">1</span>)
+        )
+        <span class="hljs-variable language_">self</span>.lstm = nn.LSTM(input_size=args[<span class="hljs-string">&#x27;out_channels&#x27;</span>], hidden_size=args[<span class="hljs-string">&#x27;hidden_size&#x27;</span>],
+                            num_layers=args[<span class="hljs-string">&#x27;num_layers&#x27;</span>], batch_first=<span class="hljs-literal">True</span>)
+        <span class="hljs-variable language_">self</span>.fc = nn.Linear(args[<span class="hljs-string">&#x27;hidden_size&#x27;</span>], args[<span class="hljs-string">&#x27;output_size&#x27;</span>])
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, x</span>):
+        x = x.permute(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)
+        x = <span class="hljs-variable language_">self</span>.conv(x)
+        x = x.permute(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)
+        x, _ = <span class="hljs-variable language_">self</span>.lstm(x)
+        x = <span class="hljs-variable language_">self</span>.fc(x)
+        x = x[:, -<span class="hljs-number">1</span>, :]
+        <span class="hljs-keyword">return</span> x
+kf = KFold(n_splits=folds)
+folenum = <span class="hljs-number">0</span>
+<span class="hljs-keyword">for</span> train_index, test_index <span class="hljs-keyword">in</span> kf.split(X):
+    <span class="hljs-comment">#model = lstm(len(feature),hidden_size,1)</span>
+    model = CNN_LSTM(args=<span class="hljs-built_in">dict</span>(in_channels=<span class="hljs-built_in">len</span>(feature), out_channels=hidden_size, hidden_size=hidden_size, num_layers=<span class="hljs-number">1</span>, output_size=<span class="hljs-number">1</span>))
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=<span class="hljs-number">0.001</span>)
+    trainx, trainy = np.array(X)[train_index], np.array(Y)[train_index]
+    testx, testy = np.array(X)[test_index], np.array(Y)[test_index]
+    train_loader = DataLoader(dataset=Mydataset(trainx, trainy, transform=transforms.ToTensor()), batch_size=batch_size,
+                              shuffle=<span class="hljs-literal">True</span>)
+    test_loader = DataLoader(dataset=Mydataset(testx, testy), batch_size=batch_size, shuffle=<span class="hljs-literal">True</span>)
+    preds = []
+    labels = []
+    loss123 = []
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(step_num):
+        total_loss = <span class="hljs-number">0</span>
+        <span class="hljs-keyword">for</span> idx, (data, label) <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(train_loader):
+            data1 = data.squeeze(<span class="hljs-number">1</span>)
+            pred = model(Variable(data1))
+            label = label.unsqueeze(<span class="hljs-number">1</span>)
+            loss = criterion(pred, label)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+            loss123.append(total_loss)
+    <span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+
+    plt.plot(loss123, <span class="hljs-string">&quot;r&quot;</span>, label=<span class="hljs-string">&quot;loss&quot;</span>)
+    plt.title(<span class="hljs-string">&#x27;loss&#x27;</span>)
+    plt.show()
+    preds = []
+    labels = []
+    <span class="hljs-keyword">for</span> idx, (x, label) <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(test_loader):
+        x = x.squeeze(<span class="hljs-number">1</span>)  <span class="hljs-comment"># batch_size,seq_len,input_size</span>
+        pred = model(x)
+        preds.extend(pred.data.squeeze(<span class="hljs-number">1</span>).tolist())
+        labels.extend(label.tolist())
+    plt.plot([ele * (<span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] - <span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>]) + <span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">for</span> ele <span class="hljs-keyword">in</span> preds], <span class="hljs-string">&quot;r&quot;</span>, label=<span class="hljs-string">&quot;pred&quot;</span>)
+    plt.plot([ele * (<span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] - <span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>]) + <span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">for</span> ele <span class="hljs-keyword">in</span> labels], <span class="hljs-string">&quot;b&quot;</span>, label=<span class="hljs-string">&quot;real&quot;</span>)
+    plt.title(<span class="hljs-string">&#x27;prediction&#x27;</span>)
+    plt.show()
+    torch.save(model.state_dict(), (<span class="hljs-string">f&#x27;model-fold<span class="hljs-subst">{folenum+<span class="hljs-number">1</span>}</span>.pt&#x27;</span>))
+    folenum += <span class="hljs-number">1</span>
+
+
+<span class="hljs-comment"># 开始测试</span>
+df2 = pd.read_csv(prediction_name)
+df1 = df2.tail(sequence)
+df1 = df1.sort_index(ascending=<span class="hljs-literal">True</span>)
+df1 = df1[feature]
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> feature:
+    df1[i] = (df1[i] - min_max[i][<span class="hljs-number">0</span>]) / (min_max[i][<span class="hljs-number">1</span>] - min_max[i][<span class="hljs-number">0</span>])
+x = torch.tensor(np.array(df1))
+x = x.to(torch.float32)
+x = x.unsqueeze(<span class="hljs-number">0</span>)
+result = []
+<span class="hljs-keyword">for</span> folenum <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(folds):
+    model.load_state_dict(torch.load(<span class="hljs-string">f&#x27;model-fold<span class="hljs-subst">{folenum+<span class="hljs-number">1</span>}</span>.pt&#x27;</span>))
+    result.append(model(x).data.squeeze(<span class="hljs-number">1</span>).tolist()[<span class="hljs-number">0</span>] * (<span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] - <span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>]) + <span class="hljs-built_in">list</span>(min_max.values())[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>])
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;预测结果:&quot;</span> + <span class="hljs-built_in">str</span>(<span class="hljs-built_in">sum</span>(result) / <span class="hljs-built_in">len</span>(result)))
+
+
+</code></pre></div>
+`,toc:[]};export{e as default};

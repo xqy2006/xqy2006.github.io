@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+<title>xqy2006's blog</title>
+<description>xqy2006's blog</description>
+<link>https://blog.xuqinyang.top/</link>
+<item><title>fastcp——从零开始做一个多平台文件传输同步工具</title><link>https://blog.xuqinyang.top/article/uaoyy6mu/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/uaoyy6mu/</guid><pubDate>Fri, 27 Feb 2026 00:00:00 GMT</pubDate><description># fastcp——从零开始做一个多平台文件传输同步工具
+计网课有一项作业是写一个简单文件传输软件，需要支持：
+文件分片、并发传输、重传机制、校验（例如 MD5/SHA256 校验每个文件或分片）、断点续传（使用文件快照或增量校验）、跨平台路径与权限处理
+可选优化：传输前做可选压缩、采用差异同步（rsync 风格算法）、使用多路复用/并发连接提高吞吐量。
+既然这里提到了rsync，那我们也来做一个类似rsync支持Delta 增量同步的工具
+首先要求了需要跨平台，由于为了能够更精细化地进行syscall，以及我们要尽可能的轻量、高性能，因此选用了C++
+在压缩库上，我选择传输常用的zstd，哈</description></item>
+<item><title>个人向ai编码能力排名</title><link>https://blog.xuqinyang.top/article/2ycc8c0p/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/2ycc8c0p/</guid><pubDate>Sat, 21 Feb 2026 00:00:00 GMT</pubDate><description>以下为我实际在使用时（直接对话，agent模式，claude code）的主观评价
+截止至2026.2.21：
+Claude opus 4.6 &gt; GPT-5.3-codex &gt; Gemini 3.1 pro preview（刚发布，还未降智） &gt;&gt; GLM-5 = Claude sonnet 4.6 &gt; MiniMax M2.5 &gt;&gt; Kimi K2.5 = DeepSeek V3.2</description></item>
+<item><title>PydAnalyzer——pyd辅助分析工具</title><link>https://blog.xuqinyang.top/article/mn60qrhs/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/mn60qrhs/</guid><pubDate>Sat, 21 Feb 2026 00:00:00 GMT</pubDate><description>最近将pyd逆向的方法论总结了一下，丢给ai，写出了这个工具，感觉还是比较方便的，能自动删除一些冗余的引用计数，异常之类的代码，还有标明函数调用关系
+暂时仅发布二进制，未开放源代码
+xqy2006/PydAnalyzer: A reverse engineering tool for analyzing Cython-compiled Python extensions (.pyd) using IDA Pro pseudocode.↗</description></item>
+<item><title>某通讯软件jsc逆向——破解超级调色盘</title><link>https://blog.xuqinyang.top/article/f9696bda/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/f9696bda/</guid><pubDate>Sun, 08 Feb 2026 00:00:00 GMT</pubDate><description>本文基于版本9.9.21-38711
+
+## 获取前端伪代码
+为支持多平台，软件采用的是electron架构，通过将js编译为jsc以保护前端代码，目前对改软件的修改多通过注入js，劫持IPC实现，但是极其容易被检测，从而触发风控，若是直接修改其前端的jsc字节码，则几乎不会被发现（目前没发现校验）
+jsc可以从major.node中提取出来，之后再通过我之前的项目jsc2js↗，可以将所有jsc转换为可读的js：qqnt.js
+此外我还统计了其中出现中文的代码行：utf8_strings.txt
+有了前端的伪代码，我们该如何去实际修改呢？接下来以破解svip功能超级调色盘为例进行探究
+## </description></item>
+<item><title>PySandbox——一个用Python编写的PE文件授权系统</title><link>https://blog.xuqinyang.top/article/5qif4wjc/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/5qif4wjc/</guid><pubDate>Sun, 25 Jan 2026 00:00:00 GMT</pubDate><description>静态编译后的Python本身就是一个十分复杂的系统，且难以恢复符号，十分适合用来当壳，在AI的帮助下花一天搓了个简单的授权系统，可以通过process hollowing加载任意32/64位EXE程序
+
+然后又用C#写了一个加壳器
+
+经测试在体积较小的exe（10MB以下）均能良好运行
+但在较大的exe（例如electron打包的应用）会导致闪退（暂未找到原因），并且十分缓慢（Python的运行速度相较于其它语言还是太慢了）
+下载地址：
+https://wwbdu.lanzouv.com/iPYWm3h00pmd↗</description></item>
+<item><title>moectf2025 Week1-Week3 WP</title><link>https://blog.xuqinyang.top/article/mr82j248/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/mr82j248/</guid><pubDate>Sun, 12 Oct 2025 00:00:00 GMT</pubDate><description>## misc
+### Rush
+gif动图，抽帧第12帧有二维码但缺角，用ppt补全第三个角扫码即可
+### ez_LSB
+丢进StegSolve，勾上red通道即可
+### ez_锟斤拷????
+exp:
+python22 linescopydef full_to_half(text):
+    result = []
+    for char in text:
+        code = ord(char)
+        if code == 0x3000:
+            result.append(&amp;#x27; &amp;#x27;)
+        elif 0xFF01 &lt;=</description></item>
+<item><title>win11上chromium系软件卡顿解决</title><link>https://blog.xuqinyang.top/article/ngrog9zb/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/ngrog9zb/</guid><pubDate>Wed, 27 Aug 2025 00:00:00 GMT</pubDate><description>最近在打开electron应用时感觉十分卡顿，github desktop给我干到5帧了，什么都点不了，edge开发者工具也是，卡成ppt，打开任务管理器才发现有一个叫mspc的进程一直在吃cpu，把它终止掉之后立刻变流畅了
+网上一搜这东西是（微软）电脑管家，于是赶紧去设置里把它卸载了
+我记得最开始我的电脑上是没有这个东西的（或者有，但是没闹什么幺蛾子），阿三程序员果然名不虚传😅
+不过卸载掉这个电脑管家并没有解决qqnt的卡顿，上网搜了一下是不能启用独显，在启动参数上加个--disable-gpu就好了......</description></item>
+<item><title>jsc2js——将v8字节码转换为可读的js代码</title><link>https://blog.xuqinyang.top/article/w3cmceab/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/w3cmceab/</guid><pubDate>Wed, 27 Aug 2025 00:00:00 GMT</pubDate><description>最近在研究Typora的时候需要分析被bytenode加密的jsc文件，如今大多数electron架构的项目为了保护js代码都使用bytenode将js编译成了jsc（例如qq，从major.node中可以提取出jsc，分析一下可以找到一些有趣的东西），而网上的教程和已有的工具（suleram/View8↗）只支持v12.0.1版本以前的v8引擎，之后v8引擎的api发生了较大的改动
+对此我编写了下面的项目，提供了12.0.1版本以来所有被node和electron使用过的patched v8，可以将jsc字节码转换为可读的js代码：
+xqy2006/jsc2js↗
+在仓库README中有详细</description></item>
+<item><title>棋类策略游戏设计与人机对战系统开发</title><link>https://blog.xuqinyang.top/article/56zn3lsn/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/56zn3lsn/</guid><pubDate>Tue, 08 Jul 2025 00:00:00 GMT</pubDate><description>### 规则设计
+游戏灵感来源于一道中考模拟题：
+image-20250708154632038
+这里说是2×2的正方形网格实际上可以看出3×3的点阵，共9个点可选（下文中所有的n都是对于点阵而非网格）
+根据这道题目我重新设计了规则：
+棋盘为14×14格点
+
+两人依次在网格中画线段，线段的起点和终点均为格点
+
+新画线段的起点为前一条线段的终点，且与任意已画出线段不能有其他公共点
+
+当某人无法画出新的线段时，则另一人获胜
+
+能量限制：移动距离不能超过当前能量值
+
+为什么是14×14呢？首先相较于原题的3×3，我们显然需要增加棋盘大小以增强策略性，其次我们引入了新的规则：能量限制，这样是为了防止玩</description></item>
+<item><title>xmuoj自动AC机</title><link>https://blog.xuqinyang.top/article/d9p37l2p/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/d9p37l2p/</guid><pubDate>Tue, 01 Jul 2025 00:00:00 GMT</pubDate><description>《面向结果编程》
+请填写cookie以及实验id
+python275 linescopyimport os
+import json
+import requests
+import zipfile
+import io
+import re
+import http.cookies
+
+# ===================== 配置区域 - 请根据实际情况修改这些值 =====================
+
+CONTEST_ID =   # 比赛ID
+COOKIE_STR = &quot;&quot;
+
+# ======================================================</description></item>
+<item><title>利用Modal免费部署LLM</title><link>https://blog.xuqinyang.top/article/z7s0wyfc/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/z7s0wyfc/</guid><pubDate>Mon, 10 Mar 2025 00:00:00 GMT</pubDate><description>本文以部署QwQ-32B_q4量化为例
+
+modal每月提供$30的免费额度（现在需要添加支付方式，之前不用）（未添加支付方式只有$5额度）
+进入Modal: High-performance AI infrastructure↗，使用GitHub账号注册
+然后本地安装modal库（版本经常更新，可能会更改api，本文使用的版本是0.73.90）
+text1 linecopypip install modal
+在Modal网站进入个人设置，在API tokens处生成一个token，并在本地设置token
+text1 linecopymodal token set --token-id xxx</description></item>
+<item><title>Cpython单文件静态编译</title><link>https://blog.xuqinyang.top/article/424j6n5w/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/424j6n5w/</guid><pubDate>Sat, 08 Mar 2025 00:00:00 GMT</pubDate><description>本文依据python3.13.2+编写
+
+前往python/cpython: The Python programming language↗下载python源码，解压
+进入PCbuild文件夹，运行get_externals.bat下载依赖（可能需要魔法）
+下载完依赖后使用VS打开pcbuild.sln，将配置由Debug改为Release（确保此时是x64 Release），在解决方案资源管理器中选中Python，右键生成
+此时PCbuild文件夹下生成amd64文件夹
+在解决方案资源管理器中找到pythoncore，右键属性，配置选择Release，平台选择x64，配置属性--&gt;常规--</description></item>
+<item><title>时序预测</title><link>https://blog.xuqinyang.top/article/a4iwsl8j/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/a4iwsl8j/</guid><pubDate>Sat, 08 Mar 2025 00:00:00 GMT</pubDate><description>很久以前写的代码，那个时候transformer还没有火起来，现在万物皆可transformer了
+使用CNN+LSTM，支持多特征，多步预测，K-折交叉验证
+python145 linescopyimport torch.nn as nn
+import torch
+import torch.optim as optim
+from torch.utils.data import DataLoader, Dataset
+import numpy as np
+from torch.autograd import Variable
+import os
+import pandas as pd
+from</description></item>
+<item><title>寻找a/(b+c)+b/(a+c)+c/(a+b)=N正整数解</title><link>https://blog.xuqinyang.top/article/edfngw96/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/edfngw96/</guid><pubDate>Sat, 08 Mar 2025 00:00:00 GMT</pubDate><description>根据椭圆曲线加法原理，只要找到1组有理解后一直迭代即可
+Python33 linescopyfrom sage.all import *
+from fractions import Fraction
+
+def multiply_list_values_1(lst, number):
+    for i in range(len(lst)):
+        lst[i] = lst[i] * number
+    return lst
+R = RationalField()
+n = 6
+
+P2 = ProjectiveSpace(2, R)
+x, y, z = P2.coordinate_ri</description></item>
+<item><title>2024ciscn长城杯_rand0m_writeup</title><link>https://blog.xuqinyang.top/article/qnkp71ue/</link><guid isPermaLink="true">https://blog.xuqinyang.top/article/qnkp71ue/</guid><pubDate>Sat, 08 Mar 2025 00:00:00 GMT</pubDate><description>check.pyd丢进ida，查看string，发现可疑数字字符串
+1
+查找引用直接找到模块常量初始化函数，模块的所有常量都储存在off_18000B688，之后逆向遇到常量时来这里对照：
+c110 linescopy__int64 sub_180002BD0()
+{
+  __int64 v0; // rax
+  __int64 v1; // rax
+  __int64 v2; // rax
+  __int64 v3; // rax
+  __int64 v4; // rax
+  __int64 v5; // rax
+  __int64 v6; // rax
+  __int64 v7; // r</description></item>
+</channel></rss>

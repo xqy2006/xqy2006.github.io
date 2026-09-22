@@ -1,0 +1,10 @@
+var e={html:`<p>最近在研究Typora的时候需要分析被bytenode加密的jsc文件，如今大多数electron架构的项目为了保护js代码都使用bytenode将js编译成了jsc（例如qq，从major.node中可以提取出jsc，分析一下可以找到一些有趣的东西），而网上的教程和已有的工具（<strong><a class="md-link" href="https://github.com/suleram/View8" target="_blank" rel="noopener noreferrer">suleram/View8<span class="md-link-ext" aria-hidden="true">↗</span></a></strong>）只支持v12.0.1版本以前的v8引擎，之后v8引擎的api发生了较大的改动</p>
+<p>对此我编写了下面的项目，提供了12.0.1版本以来所有被node和electron使用过的patched v8，可以将jsc字节码转换为可读的js代码：</p>
+<p><a class="md-link" href="https://github.com/xqy2006/jsc2js" target="_blank" rel="noopener noreferrer">xqy2006/jsc2js<span class="md-link-ext" aria-hidden="true">↗</span></a></p>
+<p>在仓库README中有详细的使用说明，这里就不再赘述了</p>
+<p>注意，可能只对electron中的jsc有效，若是使用node编译出来的jsc，d8会因为找不到node中的builtin对象而报错</p>
+<p>目前可能仍有一点小问题，在反编译部分jsc时会报错（有时候会无法从哈希表中获取对象，暂未找到原因），欢迎pr</p>
+<p>有了工具，那也应该有些题目来练手，我出了一道：<a class="md-link" href="/ez_jsc.zip" data-internal="1">ez_jsc</a>（如果下载太慢，可以从这里下载：<a class="md-link" href="https://wwri.lanzouo.com/iHP0434op6oh" target="_blank" rel="noopener noreferrer">蓝奏云<span class="md-link-ext" aria-hidden="true">↗</span></a>）</p>
+<p>欢迎在评论中分享你的解题过程</p>
+<p>不知道以后会不会有ctf题目出jsc逆向呢🤔</p>
+`,toc:[]};export{e as default};

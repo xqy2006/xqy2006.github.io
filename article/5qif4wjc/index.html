@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#FAF9F5" />
+    <meta name="description" content="A static blog that behaves like a shell." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- CJK faces: ~140 unicode-range shards. Loaded non-blocking, because a
+         Latin-only reader never needs any of them. -->
+    <link rel="stylesheet" href="/fonts/cn/faces.css" media="print"
+          onload="this.media='all';this.onload=null" />
+    <noscript><link rel="stylesheet" href="/fonts/cn/faces.css" /></noscript>
+    <link rel="alternate" type="application/rss+xml" title="feed" href="/feed.xml" />
+    <title>PySandbox——一个用Python编写的PE文件授权系统 · xqy2006's blog</title>
+    <meta name="description" content="静态编译后的Python本身就是一个十分复杂的系统，且难以恢复符号，十分适合用来当壳，在AI的帮助下花一天搓了个简单的授权系统，可以通过process hollowing加载任意32/64位EXE程序 然后又用C#写了一个加壳器 经测试在体积较小的exe（10MB以下）均能良好运行 但在较大的exe（例如elect">
+    <link rel="canonical" href="https://blog.xuqinyang.top/article/5qif4wjc/">
+    <meta property="og:title" content="PySandbox——一个用Python编写的PE文件授权系统">
+    <meta property="og:description" content="静态编译后的Python本身就是一个十分复杂的系统，且难以恢复符号，十分适合用来当壳，在AI的帮助下花一天搓了个简单的授权系统，可以通过process hollowing加载任意32/64位EXE程序 然后又用C#写了一个加壳器 经测试在体积较小的exe（10MB以下）均能良好运行 但在较大的exe（例如elect">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2026-01-25">
+    <script type="module" crossorigin src="/assets/index-AbpnEZX5.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BOixYSLH.css">
+  </head>
+  <body>
+    <!-- Crawlers and readers without JavaScript get real prose here.
+         main.ts removes it once the terminal has booted. -->
+    <div id="prerender" class="prerender"><article class="md" data-slug="5qif4wjc"><p>静态编译后的Python本身就是一个十分复杂的系统，且难以恢复符号，十分适合用来当壳，在AI的帮助下花一天搓了个简单的授权系统，可以通过process hollowing加载任意32/64位EXE程序</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/pysandbox_1.png" data-name="pysandbox_1.png" data-alt=""><img class="md-img" src="/img/Program/assets/pysandbox_1.png" alt="" loading="lazy" decoding="async"></span>
+<p>然后又用C#写了一个加壳器</p>
+<span class="md-media" data-kind="image" data-src="/img/Program/assets/pysandbox_2.png" data-name="pysandbox_2.png" data-alt=""><img class="md-img" src="/img/Program/assets/pysandbox_2.png" alt="" loading="lazy" decoding="async"></span>
+<p>经测试在体积较小的exe（10MB以下）均能良好运行</p>
+<p>但在较大的exe（例如electron打包的应用）会导致闪退（暂未找到原因），并且十分缓慢（Python的运行速度相较于其它语言还是太慢了）</p>
+<p>下载地址：</p>
+<p><a class="md-link" href="https://wwbdu.lanzouv.com/iPYWm3h00pmd" target="_blank" rel="noopener noreferrer">https://wwbdu.lanzouv.com/iPYWm3h00pmd<span class="md-link-ext" aria-hidden="true">↗</span></a></p>
+</article></div>
+    <main id="app" class="app" aria-label="terminal"></main>
+  </body>
+</html>

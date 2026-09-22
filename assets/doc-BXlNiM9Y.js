@@ -1,0 +1,1385 @@
+var e={html:`<p>check.pyd丢进ida，查看string，发现可疑数字字符串</p>
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/1.png" data-name="1.png" data-alt="1"><img class="md-img" src="/img/CTF/rand0m_writeup_img/1.png" alt="1" loading="lazy" decoding="async"><span class="md-caption">1</span></span>
+<p>查找引用直接找到模块常量初始化函数，模块的所有常量都储存在<code class="md-code-inline">off_18000B688</code>，之后逆向遇到常量时来这里对照：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">110 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">__int64 <span class="hljs-title function_">sub_180002BD0</span><span class="hljs-params">()</span>
+{
+  __int64 v0; <span class="hljs-comment">// rax</span>
+  __int64 v1; <span class="hljs-comment">// rax</span>
+  __int64 v2; <span class="hljs-comment">// rax</span>
+  __int64 v3; <span class="hljs-comment">// rax</span>
+  __int64 v4; <span class="hljs-comment">// rax</span>
+  __int64 v5; <span class="hljs-comment">// rax</span>
+  __int64 v6; <span class="hljs-comment">// rax</span>
+  __int64 v7; <span class="hljs-comment">// rax</span>
+  __int64 v8; <span class="hljs-comment">// rax</span>
+  __int64 v9; <span class="hljs-comment">// rax</span>
+  __int64 v10; <span class="hljs-comment">// rax</span>
+  __int64 v11; <span class="hljs-comment">// rax</span>
+  __int64 v12; <span class="hljs-comment">// rax</span>
+  __int64 v13; <span class="hljs-comment">// rax</span>
+  __int64 v14; <span class="hljs-comment">// rax</span>
+  __int64 v15; <span class="hljs-comment">// rax</span>
+  __int64 v16; <span class="hljs-comment">// rax</span>
+  __int64 v17; <span class="hljs-comment">// rax</span>
+  __int64 v18; <span class="hljs-comment">// rax</span>
+  __int64 v19; <span class="hljs-comment">// rax</span>
+  __int64 v20; <span class="hljs-comment">// rax</span>
+
+  <span class="hljs-keyword">if</span> ( (<span class="hljs-type">int</span>)sub_180002620() &lt; <span class="hljs-number">0</span> )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v0 = PyLong_FromLong(<span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">29</span>) = v0;
+  <span class="hljs-keyword">if</span> ( !v0 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v1 = PyLong_FromLong(<span class="hljs-number">1LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">30</span>) = v1;
+  <span class="hljs-keyword">if</span> ( !v1 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v2 = PyLong_FromLong(<span class="hljs-number">2LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>) = v2;
+  <span class="hljs-keyword">if</span> ( !v2 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v3 = PyLong_FromLong(<span class="hljs-number">4LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">32</span>) = v3;
+  <span class="hljs-keyword">if</span> ( !v3 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v4 = PyLong_FromLong(<span class="hljs-number">5LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">33</span>) = v4;
+  <span class="hljs-keyword">if</span> ( !v4 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v5 = PyLong_FromLong(<span class="hljs-number">8LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>) = v5;
+  <span class="hljs-keyword">if</span> ( !v5 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v6 = PyLong_FromLong(<span class="hljs-number">11LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">35</span>) = v6;
+  <span class="hljs-keyword">if</span> ( !v6 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v7 = PyLong_FromLong(<span class="hljs-number">16LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">36</span>) = v7;
+  <span class="hljs-keyword">if</span> ( !v7 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v8 = PyLong_FromLong(<span class="hljs-number">23LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">37</span>) = v8;
+  <span class="hljs-keyword">if</span> ( !v8 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v9 = PyLong_FromLong(<span class="hljs-number">65537LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">38</span>) = v9;
+  <span class="hljs-keyword">if</span> ( !v9 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v10 = PyLong_FromLong(<span class="hljs-number">37360232LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">39</span>) = v10;
+  <span class="hljs-keyword">if</span> ( !v10 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v11 = PyLong_FromLong(<span class="hljs-number">304643896LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">40</span>) = v11;
+  <span class="hljs-keyword">if</span> ( !v11 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v12 = PyLong_FromLong(<span class="hljs-number">1244723021LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">41</span>) = v12;
+  <span class="hljs-keyword">if</span> ( !v12 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v13 = PyLong_FromString(<span class="hljs-string">&quot;2282784775&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">42</span>) = v13;
+  <span class="hljs-keyword">if</span> ( !v13 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v14 = PyLong_FromString(<span class="hljs-string">&quot;2563918650&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">43</span>) = v14;
+  <span class="hljs-keyword">if</span> ( !v14 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v15 = PyLong_FromString(<span class="hljs-string">&quot;2654435769&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">44</span>) = v15;
+  <span class="hljs-keyword">if</span> ( !v15 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v16 = PyLong_FromString(<span class="hljs-string">&quot;2918417411&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">45</span>) = v16;
+  <span class="hljs-keyword">if</span> ( !v16 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v17 = PyLong_FromString(<span class="hljs-string">&quot;3628702646&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">46</span>) = v17;
+  <span class="hljs-keyword">if</span> ( !v17 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v18 = PyLong_FromString(<span class="hljs-string">&quot;3773946743&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">47</span>) = v18;
+  <span class="hljs-keyword">if</span> ( !v18 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v19 = PyLong_FromString(<span class="hljs-string">&quot;4198170623&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">48</span>) = v19;
+  <span class="hljs-keyword">if</span> ( !v19 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0xFFFFFFFFL</span>L;
+  v20 = PyLong_FromString(<span class="hljs-string">&quot;4294967293&quot;</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">0LL</span>);
+  *((_QWORD *)off_18000B688 + <span class="hljs-number">49</span>) = v20;
+  <span class="hljs-keyword">return</span> (<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)(v20 != <span class="hljs-number">0</span>) - <span class="hljs-number">1</span>;
+}</code></pre></div>
+<p>运行<code class="md-code-inline">import rand0m</code> <code class="md-code-inline">dir(rand0m)</code>发现该模块有两个函数<code class="md-code-inline">check</code>和<code class="md-code-inline">rand0m</code>，<code class="md-code-inline">check</code>接受一个16进制字符串（flag），返回True/False，<code class="md-code-inline">random</code>接受一个16进制字符串（seed），返回一个元组，包含两个伪随机数。</p>
+<p>直接在代码段中搜索<code class="md-code-inline">Py_TrueStruct</code>，找到check函数代码段：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">733 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">__int64 __fastcall <span class="hljs-title function_">sub_180001960</span><span class="hljs-params">(__int64 a1, __int64 a2)</span>
+{
+  __int64 v2; <span class="hljs-comment">// r12</span>
+  __int64 v3; <span class="hljs-comment">// rbx</span>
+  <span class="hljs-type">int</span> *v4; <span class="hljs-comment">// rsi</span>
+  <span class="hljs-type">int</span> *v5; <span class="hljs-comment">// r14</span>
+  __int64 v6; <span class="hljs-comment">// r8</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> v7; <span class="hljs-comment">// ebp</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> v8; <span class="hljs-comment">// r13d</span>
+  _QWORD *v9; <span class="hljs-comment">// rdx</span>
+  _DWORD *v10; <span class="hljs-comment">// rcx</span>
+  _DWORD *v11; <span class="hljs-comment">// rcx</span>
+  _DWORD *v12; <span class="hljs-comment">// rcx</span>
+  _DWORD *v13; <span class="hljs-comment">// rcx</span>
+  _DWORD *v14; <span class="hljs-comment">// rcx</span>
+  _DWORD *v15; <span class="hljs-comment">// rcx</span>
+  _DWORD *v16; <span class="hljs-comment">// rcx</span>
+  _DWORD *v17; <span class="hljs-comment">// rcx</span>
+  _DWORD *v18; <span class="hljs-comment">// rcx</span>
+  __int64 v19; <span class="hljs-comment">// r13</span>
+  <span class="hljs-type">int</span> v20; <span class="hljs-comment">// eax</span>
+  __int64 v21; <span class="hljs-comment">// rcx</span>
+  __int64 v22; <span class="hljs-comment">// r15</span>
+  <span class="hljs-type">bool</span> v23; <span class="hljs-comment">// zf</span>
+  _QWORD *v24; <span class="hljs-comment">// rdx</span>
+  __int64 v25; <span class="hljs-comment">// rax</span>
+  __int64 v26; <span class="hljs-comment">// r8</span>
+  __int64 v27; <span class="hljs-comment">// r9</span>
+  <span class="hljs-type">unsigned</span> __int64 v28; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> *v29; <span class="hljs-comment">// rbp</span>
+  <span class="hljs-type">int</span> *v30; <span class="hljs-comment">// r14</span>
+  __int64 v31; <span class="hljs-comment">// rax</span>
+  __int64 v32; <span class="hljs-comment">// rax</span>
+  __int64 v33; <span class="hljs-comment">// r9</span>
+  __int64 v34; <span class="hljs-comment">// rbx</span>
+  __int64 v35; <span class="hljs-comment">// rax</span>
+  __int64 v36; <span class="hljs-comment">// r8</span>
+  <span class="hljs-type">unsigned</span> __int64 v37; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> *v38; <span class="hljs-comment">// rsi</span>
+  <span class="hljs-type">int</span> *v39; <span class="hljs-comment">// rdi</span>
+  __int64 v40; <span class="hljs-comment">// rax</span>
+  __int64 v41; <span class="hljs-comment">// r8</span>
+  __int64 v42; <span class="hljs-comment">// rbx</span>
+  __int64 v43; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v44; <span class="hljs-comment">// r12</span>
+  <span class="hljs-type">int</span> *v45; <span class="hljs-comment">// rcx</span>
+  __int64 v46; <span class="hljs-comment">// rdi</span>
+  <span class="hljs-type">int</span> *Item_KnownHash; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v48; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> v49; <span class="hljs-comment">// eax</span>
+  _DWORD *v50; <span class="hljs-comment">// rsi</span>
+  <span class="hljs-type">int</span> v51; <span class="hljs-comment">// edx</span>
+  __int64 v52; <span class="hljs-comment">// rbx</span>
+  __int64 v53; <span class="hljs-comment">// r8</span>
+  <span class="hljs-type">int</span> *v54; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> *v55; <span class="hljs-comment">// r12</span>
+  __int64 v56; <span class="hljs-comment">// rcx</span>
+  __int64 v57; <span class="hljs-comment">// r9</span>
+  __int64 v58; <span class="hljs-comment">// r8</span>
+  __int64 v59; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">unsigned</span> __int64 v60; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> *v61; <span class="hljs-comment">// rsi</span>
+  __int64 v62; <span class="hljs-comment">// rax</span>
+  __int64 v63; <span class="hljs-comment">// r8</span>
+  <span class="hljs-type">int</span> IsTrue; <span class="hljs-comment">// ebx</span>
+  __int64 v65; <span class="hljs-comment">// rcx</span>
+  _QWORD *v66; <span class="hljs-comment">// rdx</span>
+  __int64 v67; <span class="hljs-comment">// rax</span>
+  __int64 v68; <span class="hljs-comment">// r8</span>
+  __int64 v69; <span class="hljs-comment">// r9</span>
+  <span class="hljs-type">unsigned</span> __int64 v70; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> *v71; <span class="hljs-comment">// rsi</span>
+  __int64 v72; <span class="hljs-comment">// rax</span>
+  __int64 v73; <span class="hljs-comment">// r8</span>
+  __int64 v74; <span class="hljs-comment">// r8</span>
+  <span class="hljs-type">int</span> v75; <span class="hljs-comment">// esi</span>
+  __int64 v76; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v77; <span class="hljs-comment">// rcx</span>
+  __int64 v78; <span class="hljs-comment">// rdx</span>
+  __int64 v79; <span class="hljs-comment">// rbx</span>
+  __int64 v80; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v81; <span class="hljs-comment">// rcx</span>
+  <span class="hljs-type">int</span> *v83; <span class="hljs-comment">// [rsp+30h] [rbp-88h]</span>
+  <span class="hljs-type">int</span> *v84; <span class="hljs-comment">// [rsp+38h] [rbp-80h]</span>
+  _QWORD v85[<span class="hljs-number">2</span>]; <span class="hljs-comment">// [rsp+50h] [rbp-68h] BYREF</span>
+  <span class="hljs-type">int</span> v86; <span class="hljs-comment">// [rsp+C0h] [rbp+8h]</span>
+  <span class="hljs-type">int</span> *v88; <span class="hljs-comment">// [rsp+D0h] [rbp+18h]</span>
+  __int64 v89; <span class="hljs-comment">// [rsp+D8h] [rbp+20h]</span>
+
+  v2 = a2;
+  v3 = <span class="hljs-number">0LL</span>;
+  v4 = <span class="hljs-number">0LL</span>;
+  v5 = <span class="hljs-number">0LL</span>;
+  v83 = <span class="hljs-number">0LL</span>;
+  v88 = <span class="hljs-number">0LL</span>;
+  v84 = <span class="hljs-number">0LL</span>;
+  v6 = PyList_New(<span class="hljs-number">8LL</span>);
+  <span class="hljs-keyword">if</span> ( !v6 )
+  {
+    v7 = <span class="hljs-number">13</span>;
+    v8 = <span class="hljs-number">2861</span>;
+    <span class="hljs-keyword">goto</span> LABEL_225;
+  }
+  v9 = off_18000B688;
+  v10 = (_DWORD *)*((_QWORD *)off_18000B688 + <span class="hljs-number">40</span>);
+  <span class="hljs-keyword">if</span> ( *v10 != <span class="hljs-number">-1</span> )
+    ++*v10;
+  **(_QWORD **)(v6 + <span class="hljs-number">24</span>) = v9[<span class="hljs-number">40</span>];
+  v11 = (_DWORD *)v9[<span class="hljs-number">43</span>];
+  <span class="hljs-keyword">if</span> ( *v11 != <span class="hljs-number">-1</span> )
+    ++*v11;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">8LL</span>) = v9[<span class="hljs-number">43</span>];
+  v12 = (_DWORD *)v9[<span class="hljs-number">41</span>];
+  <span class="hljs-keyword">if</span> ( *v12 != <span class="hljs-number">-1</span> )
+    ++*v12;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">16LL</span>) = v9[<span class="hljs-number">41</span>];
+  v13 = (_DWORD *)v9[<span class="hljs-number">47</span>];
+  <span class="hljs-keyword">if</span> ( *v13 != <span class="hljs-number">-1</span> )
+    ++*v13;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">24LL</span>) = v9[<span class="hljs-number">47</span>];
+  v14 = (_DWORD *)v9[<span class="hljs-number">39</span>];
+  <span class="hljs-keyword">if</span> ( *v14 != <span class="hljs-number">-1</span> )
+    ++*v14;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">32LL</span>) = v9[<span class="hljs-number">39</span>];
+  v15 = (_DWORD *)v9[<span class="hljs-number">45</span>];
+  <span class="hljs-keyword">if</span> ( *v15 != <span class="hljs-number">-1</span> )
+    ++*v15;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">40LL</span>) = v9[<span class="hljs-number">45</span>];
+  v16 = (_DWORD *)v9[<span class="hljs-number">42</span>];
+  <span class="hljs-keyword">if</span> ( *v16 != <span class="hljs-number">-1</span> )
+    ++*v16;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">48LL</span>) = v9[<span class="hljs-number">42</span>];
+  v17 = (_DWORD *)v9[<span class="hljs-number">46</span>];
+  <span class="hljs-keyword">if</span> ( *v17 != <span class="hljs-number">-1</span> )
+    ++*v17;
+  v83 = (<span class="hljs-type">int</span> *)v6;
+  *(_QWORD *)(*(_QWORD *)(v6 + <span class="hljs-number">24</span>) + <span class="hljs-number">56LL</span>) = v9[<span class="hljs-number">46</span>];
+  v18 = (_DWORD *)v9[<span class="hljs-number">29</span>];
+  <span class="hljs-keyword">if</span> ( *v18 != <span class="hljs-number">-1</span> )
+    ++*v18;
+  v19 = v9[<span class="hljs-number">29</span>];
+  v20 = <span class="hljs-number">0</span>;
+  v89 = v19;
+  v86 = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )
+  {
+    v22 = PyLong_FromLong((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)v20);
+    <span class="hljs-keyword">if</span> ( !v22 )
+    {
+      v7 = <span class="hljs-number">15</span>;
+      v8 = <span class="hljs-number">2908</span>;
+      <span class="hljs-keyword">goto</span> LABEL_223;
+    }
+    <span class="hljs-keyword">if</span> ( v4 )
+    {
+      <span class="hljs-keyword">if</span> ( *v4 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v4)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v4);
+      }
+    }
+    v24 = off_18000B688;
+    v25 = *(_QWORD *)(v22 + <span class="hljs-number">8</span>);
+    v26 = PyLong_Type[<span class="hljs-number">0</span>];
+    v27 = *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>);
+    <span class="hljs-keyword">if</span> ( v25 == PyLong_Type[<span class="hljs-number">0</span>] )
+    {
+      v28 = *(_QWORD *)(v22 + <span class="hljs-number">16</span>);
+      <span class="hljs-keyword">if</span> ( (v28 &amp; <span class="hljs-number">1</span>) != <span class="hljs-number">0</span> )
+      {
+        <span class="hljs-keyword">if</span> ( *(_DWORD *)v22 != <span class="hljs-number">-1</span> )
+          ++*(_DWORD *)v22;
+        v29 = (<span class="hljs-type">int</span> *)v22;
+        v30 = (<span class="hljs-type">int</span> *)v22;
+        <span class="hljs-keyword">goto</span> LABEL_40;
+      }
+      v31 = v28 &gt;= <span class="hljs-number">0x10</span>
+          ? (*(__int64 (__fastcall **)(__int64, _QWORD))(PyLong_Type[<span class="hljs-number">12</span>] + <span class="hljs-number">16LL</span>))(v22, *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>))
+          : PyLong_FromLongLong(
+              <span class="hljs-number">8LL</span> * (<span class="hljs-type">int</span>)(*(_DWORD *)(v22 + <span class="hljs-number">24</span>) * (<span class="hljs-number">1</span> - (v28 &amp; <span class="hljs-number">3</span>))),
+              off_18000B688,
+              PyLong_Type[<span class="hljs-number">0</span>],
+              v27);
+    }
+    <span class="hljs-keyword">else</span>
+    {
+      v31 = v25 == PyFloat_Type
+          ? PyFloat_FromDouble(v21, off_18000B688, PyLong_Type[<span class="hljs-number">0</span>], v27)
+          : PyNumber_Multiply(v22, *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>));
+    }
+    v29 = (<span class="hljs-type">int</span> *)v31;
+    v30 = (<span class="hljs-type">int</span> *)v31;
+    <span class="hljs-keyword">if</span> ( !v31 )
+    {
+      v7 = <span class="hljs-number">16</span>;
+      v8 = <span class="hljs-number">2920</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_223;
+    }
+    v24 = off_18000B688;
+LABEL_40:
+    v32 = sub_1800044A0(v22, v24[<span class="hljs-number">30</span>], v26, <span class="hljs-number">0LL</span>);
+    v34 = v32;
+    <span class="hljs-keyword">if</span> ( !v32 )
+    {
+      v8 = <span class="hljs-number">2922</span>;
+      v39 = <span class="hljs-number">0LL</span>;
+      <span class="hljs-keyword">goto</span> LABEL_208;
+    }
+    v35 = *(_QWORD *)(v32 + <span class="hljs-number">8</span>);
+    v36 = *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>);
+    <span class="hljs-keyword">if</span> ( v35 == PyLong_Type[<span class="hljs-number">0</span>] )
+    {
+      v37 = *(_QWORD *)(v34 + <span class="hljs-number">16</span>);
+      <span class="hljs-keyword">if</span> ( (v37 &amp; <span class="hljs-number">1</span>) != <span class="hljs-number">0</span> )
+      {
+        <span class="hljs-keyword">if</span> ( *(_DWORD *)v34 != <span class="hljs-number">-1</span> )
+          ++*(_DWORD *)v34;
+        v38 = (<span class="hljs-type">int</span> *)v34;
+        v39 = (<span class="hljs-type">int</span> *)v34;
+        <span class="hljs-keyword">goto</span> LABEL_53;
+      }
+      v40 = v37 &gt;= <span class="hljs-number">0x10</span>
+          ? (*(__int64 (__fastcall **)(__int64, _QWORD))(PyLong_Type[<span class="hljs-number">12</span>] + <span class="hljs-number">16LL</span>))(v34, *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>))
+          : PyLong_FromLongLong(<span class="hljs-number">8LL</span> * (<span class="hljs-type">int</span>)(*(_DWORD *)(v34 + <span class="hljs-number">24</span>) * (<span class="hljs-number">1</span> - (v37 &amp; <span class="hljs-number">3</span>))), PyLong_Type[<span class="hljs-number">0</span>], v36, v33);
+    }
+    <span class="hljs-keyword">else</span>
+    {
+      v40 = v35 == PyFloat_Type
+          ? PyFloat_FromDouble(off_18000B688, PyLong_Type[<span class="hljs-number">0</span>], v36, v33)
+          : PyNumber_Multiply(v34, *((_QWORD *)off_18000B688 + <span class="hljs-number">34</span>));
+    }
+    v38 = (<span class="hljs-type">int</span> *)v40;
+    v39 = (<span class="hljs-type">int</span> *)v40;
+    <span class="hljs-keyword">if</span> ( !v40 )
+    {
+      v8 = <span class="hljs-number">2924</span>;
+      <span class="hljs-keyword">goto</span> LABEL_208;
+    }
+LABEL_53:
+    <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v34 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v34)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v34);
+    }
+    v41 = *(_QWORD *)(v2 + <span class="hljs-number">8</span>);
+    v42 = *(_QWORD *)(v41 + <span class="hljs-number">112</span>);
+    <span class="hljs-keyword">if</span> ( !v42 || !*(_QWORD *)(v42 + <span class="hljs-number">8</span>) )
+    {
+      PyErr_Format(PyExc_TypeError, <span class="hljs-string">&quot;&#x27;%.200s&#x27; object is unsliceable&quot;</span>, *(<span class="hljs-type">const</span> <span class="hljs-type">char</span> **)(v41 + <span class="hljs-number">24</span>));
+LABEL_204:
+      v34 = <span class="hljs-number">0LL</span>;
+LABEL_205:
+      v8 = <span class="hljs-number">2927</span>;
+LABEL_208:
+      v7 = <span class="hljs-number">16</span>;
+      <span class="hljs-keyword">goto</span> LABEL_209;
+    }
+    v43 = PySlice_New(v29, v38, Py_NoneStruct);
+    v44 = (<span class="hljs-type">int</span> *)v43;
+    <span class="hljs-keyword">if</span> ( !v43 )
+      <span class="hljs-keyword">goto</span> LABEL_204;
+    v34 = (*(__int64 (__fastcall **)(__int64, __int64))(v42 + <span class="hljs-number">8</span>))(a2, v43);
+    <span class="hljs-keyword">if</span> ( *v44 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v44)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v44);
+    }
+    <span class="hljs-keyword">if</span> ( !v34 )
+      <span class="hljs-keyword">goto</span> LABEL_205;
+    <span class="hljs-keyword">if</span> ( *v29 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v29)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v29);
+    }
+    <span class="hljs-keyword">if</span> ( *v38 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v38)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v38);
+    }
+    v45 = v88;
+    v88 = (<span class="hljs-type">int</span> *)v34;
+    <span class="hljs-keyword">if</span> ( v45 )
+    {
+      <span class="hljs-keyword">if</span> ( *v45 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v45)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v45);
+      }
+    }
+    v46 = *((_QWORD *)off_18000B688 + <span class="hljs-number">19</span>);
+    Item_KnownHash = (<span class="hljs-type">int</span> *)PyDict_GetItem_KnownHash(*(_QWORD *)off_18000B688, v46, *(_QWORD *)(v46 + <span class="hljs-number">24</span>));
+    v48 = Item_KnownHash;
+    <span class="hljs-keyword">if</span> ( Item_KnownHash )
+    {
+      v49 = *Item_KnownHash + <span class="hljs-number">1</span>;
+      <span class="hljs-keyword">if</span> ( v49 )
+        *v48 = v49;
+      v39 = v48;
+    }
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( PyErr_Occurred() || (v39 = (<span class="hljs-type">int</span> *)sub_180003D40(v46), (v48 = v39) == <span class="hljs-number">0LL</span>) )
+    {
+      v7 = <span class="hljs-number">17</span>;
+      v8 = <span class="hljs-number">2941</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_223;
+    }
+    v50 = <span class="hljs-number">0LL</span>;
+    v51 = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">if</span> ( *((_QWORD *)v48 + <span class="hljs-number">1</span>) == PyMethod_Type )
+    {
+      v50 = (_DWORD *)*((_QWORD *)v48 + <span class="hljs-number">3</span>);
+      <span class="hljs-keyword">if</span> ( v50 )
+      {
+        v39 = (<span class="hljs-type">int</span> *)*((_QWORD *)v48 + <span class="hljs-number">2</span>);
+        <span class="hljs-keyword">if</span> ( *v50 != <span class="hljs-number">-1</span> )
+          ++*v50;
+        <span class="hljs-keyword">if</span> ( *v39 != <span class="hljs-number">-1</span> )
+          ++*v39;
+        <span class="hljs-keyword">if</span> ( *v48 &gt;= <span class="hljs-number">0</span> )
+        {
+          v23 = (*(_QWORD *)v48)-- == <span class="hljs-number">1LL</span>;
+          <span class="hljs-keyword">if</span> ( v23 )
+            Py_Dealloc(v48);
+        }
+        v51 = <span class="hljs-number">1</span>;
+      }
+    }
+    v85[<span class="hljs-number">0</span>] = v34;
+    v52 = sub_180004660(v39, &amp;v85[-v51], (<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)(v51 + <span class="hljs-number">1</span>));
+    <span class="hljs-keyword">if</span> ( v50 )
+    {
+      <span class="hljs-keyword">if</span> ( (<span class="hljs-type">int</span>)*v50 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v50)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v50);
+      }
+    }
+    <span class="hljs-keyword">if</span> ( !v52 )
+    {
+      v7 = <span class="hljs-number">17</span>;
+      v8 = <span class="hljs-number">2961</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+LABEL_216:
+      v5 = v88;
+      <span class="hljs-keyword">goto</span> LABEL_217;
+    }
+    <span class="hljs-keyword">if</span> ( *v39 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v39)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v39);
+    }
+    v54 = v84;
+    v55 = (<span class="hljs-type">int</span> *)v52;
+    v84 = (<span class="hljs-type">int</span> *)v52;
+    <span class="hljs-keyword">if</span> ( v54 )
+    {
+      <span class="hljs-keyword">if</span> ( *v54 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v54)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v54);
+      }
+    }
+    v34 = sub_180004790(v52, <span class="hljs-number">1LL</span>, v53, <span class="hljs-number">0LL</span>);
+    <span class="hljs-keyword">if</span> ( !v34 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2975</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_223;
+    }
+    v58 = *((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>);
+    v59 = *(_QWORD *)(v22 + <span class="hljs-number">8</span>);
+    <span class="hljs-keyword">if</span> ( v59 == PyLong_Type[<span class="hljs-number">0</span>] )
+    {
+      v60 = *(_QWORD *)(v22 + <span class="hljs-number">16</span>);
+      <span class="hljs-keyword">if</span> ( (v60 &amp; <span class="hljs-number">1</span>) != <span class="hljs-number">0</span> )
+      {
+        <span class="hljs-keyword">if</span> ( *(_DWORD *)v22 != <span class="hljs-number">-1</span> )
+          ++*(_DWORD *)v22;
+        v61 = (<span class="hljs-type">int</span> *)v22;
+        v39 = (<span class="hljs-type">int</span> *)v22;
+        <span class="hljs-keyword">goto</span> LABEL_114;
+      }
+      v62 = v60 &gt;= <span class="hljs-number">0x10</span>
+          ? (*(__int64 (__fastcall **)(__int64, _QWORD))(PyLong_Type[<span class="hljs-number">12</span>] + <span class="hljs-number">16LL</span>))(v22, *((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>))
+          : PyLong_FromLongLong(<span class="hljs-number">2LL</span> * (<span class="hljs-type">int</span>)(*(_DWORD *)(v22 + <span class="hljs-number">24</span>) * (<span class="hljs-number">1</span> - (v60 &amp; <span class="hljs-number">3</span>))), PyLong_Type[<span class="hljs-number">0</span>], v58, v57);
+    }
+    <span class="hljs-keyword">else</span>
+    {
+      v62 = v59 == PyFloat_Type
+          ? PyFloat_FromDouble(v56, PyLong_Type[<span class="hljs-number">0</span>], v58, v57)
+          : PyNumber_Multiply(v22, *((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>));
+    }
+    v61 = (<span class="hljs-type">int</span> *)v62;
+    v39 = (<span class="hljs-type">int</span> *)v62;
+    <span class="hljs-keyword">if</span> ( !v62 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2977</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_213;
+    }
+LABEL_114:
+    v30 = (<span class="hljs-type">int</span> *)sub_180004930(v83, v61, v58);
+    <span class="hljs-keyword">if</span> ( !v30 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2979</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_213;
+    }
+    <span class="hljs-keyword">if</span> ( *v61 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v61)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v61);
+    }
+    v39 = (<span class="hljs-type">int</span> *)PyObject_RichCompare(v34, v30, <span class="hljs-number">2LL</span>);
+    <span class="hljs-keyword">if</span> ( !v39 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2982</span>;
+      <span class="hljs-keyword">goto</span> LABEL_209;
+    }
+    <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v34 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v34)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v34);
+    }
+    <span class="hljs-keyword">if</span> ( *v30 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v30)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v30);
+    }
+    IsTrue = v39 == (<span class="hljs-type">int</span> *)Py_TrueStruct;
+    <span class="hljs-keyword">if</span> ( !(IsTrue | (v39 == (<span class="hljs-type">int</span> *)Py_FalseStruct || v39 == (<span class="hljs-type">int</span> *)Py_NoneStruct)) )
+      IsTrue = PyObject_IsTrue(v39);
+    <span class="hljs-keyword">if</span> ( IsTrue &lt; <span class="hljs-number">0</span> )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2985</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_218;
+    }
+    <span class="hljs-keyword">if</span> ( *v39 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v39)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v39);
+    }
+    <span class="hljs-keyword">if</span> ( !IsTrue )
+      <span class="hljs-keyword">goto</span> LABEL_172;
+    v39 = (<span class="hljs-type">int</span> *)sub_180004790(v55, <span class="hljs-number">0LL</span>, v63, <span class="hljs-number">0LL</span>);
+    <span class="hljs-keyword">if</span> ( !v39 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2992</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_223;
+    }
+    v66 = off_18000B688;
+    v67 = *(_QWORD *)(v22 + <span class="hljs-number">8</span>);
+    v68 = PyLong_Type[<span class="hljs-number">0</span>];
+    v69 = *((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>);
+    <span class="hljs-keyword">if</span> ( v67 != PyLong_Type[<span class="hljs-number">0</span>] )
+    {
+      <span class="hljs-keyword">if</span> ( v67 == PyFloat_Type )
+        v72 = PyFloat_FromDouble(v65, off_18000B688, PyLong_Type[<span class="hljs-number">0</span>], v69);
+      <span class="hljs-keyword">else</span>
+        v72 = PyNumber_Multiply(*((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>), v22);
+      <span class="hljs-keyword">goto</span> LABEL_144;
+    }
+    v70 = *(_QWORD *)(v22 + <span class="hljs-number">16</span>);
+    <span class="hljs-keyword">if</span> ( (v70 &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">0</span> )
+    {
+      <span class="hljs-keyword">if</span> ( v70 &gt;= <span class="hljs-number">0x10</span> )
+        v72 = (*(__int64 (__fastcall **)(_QWORD, __int64))(PyLong_Type[<span class="hljs-number">12</span>] + <span class="hljs-number">16LL</span>))(
+                *((_QWORD *)off_18000B688 + <span class="hljs-number">31</span>),
+                v22);
+      <span class="hljs-keyword">else</span>
+        v72 = PyLong_FromLongLong(
+                <span class="hljs-number">2LL</span> * (<span class="hljs-type">int</span>)(*(_DWORD *)(v22 + <span class="hljs-number">24</span>) * (<span class="hljs-number">1</span> - (v70 &amp; <span class="hljs-number">3</span>))),
+                off_18000B688,
+                PyLong_Type[<span class="hljs-number">0</span>],
+                v69);
+LABEL_144:
+      v71 = (<span class="hljs-type">int</span> *)v72;
+      v30 = (<span class="hljs-type">int</span> *)v72;
+      <span class="hljs-keyword">if</span> ( !v72 )
+      {
+        v7 = <span class="hljs-number">18</span>;
+        v8 = <span class="hljs-number">2994</span>;
+        v4 = (<span class="hljs-type">int</span> *)v22;
+        <span class="hljs-keyword">goto</span> LABEL_218;
+      }
+      v66 = off_18000B688;
+      <span class="hljs-keyword">goto</span> LABEL_146;
+    }
+    <span class="hljs-keyword">if</span> ( *(_DWORD *)v22 != <span class="hljs-number">-1</span> )
+      ++*(_DWORD *)v22;
+    v71 = (<span class="hljs-type">int</span> *)v22;
+    v30 = (<span class="hljs-type">int</span> *)v22;
+LABEL_146:
+    v34 = sub_1800044A0(v71, v66[<span class="hljs-number">30</span>], v68, <span class="hljs-number">0LL</span>);
+    <span class="hljs-keyword">if</span> ( !v34 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2996</span>;
+LABEL_209:
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">if</span> ( *v30 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v30)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v30);
+      }
+      <span class="hljs-keyword">if</span> ( !v34 )
+        <span class="hljs-keyword">goto</span> LABEL_216;
+      <span class="hljs-keyword">goto</span> LABEL_213;
+    }
+    <span class="hljs-keyword">if</span> ( *v71 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v71)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v71);
+    }
+    v30 = (<span class="hljs-type">int</span> *)sub_180004930(v83, v34, v73);
+    <span class="hljs-keyword">if</span> ( !v30 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">2999</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+      <span class="hljs-keyword">goto</span> LABEL_213;
+    }
+    <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v34 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v34)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v34);
+    }
+    v34 = PyObject_RichCompare(v39, v30, <span class="hljs-number">2LL</span>);
+    <span class="hljs-keyword">if</span> ( !v34 )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">3002</span>;
+      <span class="hljs-keyword">goto</span> LABEL_209;
+    }
+    <span class="hljs-keyword">if</span> ( *v39 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v39)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v39);
+    }
+    v39 = <span class="hljs-number">0LL</span>;
+    <span class="hljs-keyword">if</span> ( *v30 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v30)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v30);
+    }
+    v75 = v34 == Py_TrueStruct;
+    <span class="hljs-keyword">if</span> ( !(v75 | (v34 == Py_FalseStruct || v34 == Py_NoneStruct)) )
+      v75 = PyObject_IsTrue(v34);
+    <span class="hljs-keyword">if</span> ( v75 &lt; <span class="hljs-number">0</span> )
+    {
+      v7 = <span class="hljs-number">18</span>;
+      v8 = <span class="hljs-number">3005</span>;
+      v4 = (<span class="hljs-type">int</span> *)v22;
+LABEL_213:
+      <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v34 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v34)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v34);
+      }
+      <span class="hljs-keyword">goto</span> LABEL_216;
+    }
+    <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v34 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v34)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v34);
+    }
+    <span class="hljs-keyword">if</span> ( v75 )
+    {
+      v76 = sub_1800044A0(v19, *((_QWORD *)off_18000B688 + <span class="hljs-number">30</span>), v74, <span class="hljs-number">1LL</span>);
+      <span class="hljs-keyword">if</span> ( !v76 )
+      {
+        v7 = <span class="hljs-number">19</span>;
+        v8 = <span class="hljs-number">3018</span>;
+        v4 = (<span class="hljs-type">int</span> *)v22;
+        <span class="hljs-keyword">goto</span> LABEL_223;
+      }
+      v77 = (<span class="hljs-type">int</span> *)v19;
+      v89 = v76;
+      v19 = v76;
+      <span class="hljs-keyword">if</span> ( *v77 &gt;= <span class="hljs-number">0</span> )
+      {
+        v23 = (*(_QWORD *)v77)-- == <span class="hljs-number">1LL</span>;
+        <span class="hljs-keyword">if</span> ( v23 )
+          Py_Dealloc(v77);
+      }
+    }
+LABEL_172:
+    v39 = <span class="hljs-number">0LL</span>;
+    v20 = v86 + <span class="hljs-number">1</span>;
+    v4 = (<span class="hljs-type">int</span> *)v22;
+    v86 = v20;
+    <span class="hljs-keyword">if</span> ( v20 &gt;= <span class="hljs-number">4</span> )
+      <span class="hljs-keyword">break</span>;
+    v2 = a2;
+  }
+  v78 = *((_QWORD *)off_18000B688 + <span class="hljs-number">32</span>);
+  <span class="hljs-keyword">if</span> ( v19 == v78 )
+  {
+    v79 = Py_TrueStruct;
+  }
+  <span class="hljs-keyword">else</span>
+  {
+    v80 = *(_QWORD *)(v19 + <span class="hljs-number">8</span>);
+    <span class="hljs-keyword">if</span> ( v80 == PyLong_Type[<span class="hljs-number">0</span>] )
+    {
+      <span class="hljs-keyword">if</span> ( (*(_QWORD *)(v19 + <span class="hljs-number">16</span>) &amp; <span class="hljs-number">2</span>) == <span class="hljs-number">0</span> &amp;&amp; *(_QWORD *)(v19 + <span class="hljs-number">16</span>) &gt;&gt; <span class="hljs-number">3</span> == <span class="hljs-number">1LL</span> &amp;&amp; *(_DWORD *)(v19 + <span class="hljs-number">24</span>) == <span class="hljs-number">4</span> )
+      {
+        v79 = Py_TrueStruct;
+        <span class="hljs-keyword">goto</span> LABEL_193;
+      }
+    }
+    <span class="hljs-keyword">else</span>
+    {
+      <span class="hljs-keyword">if</span> ( v80 != PyFloat_Type )
+      {
+        v79 = PyObject_RichCompare(v19, v78, <span class="hljs-number">2LL</span>);
+        <span class="hljs-keyword">goto</span> LABEL_193;
+      }
+      <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">double</span> *)(v19 + <span class="hljs-number">16</span>) == <span class="hljs-number">4.0</span> )
+      {
+        v79 = Py_TrueStruct;
+        <span class="hljs-keyword">goto</span> LABEL_193;
+      }
+    }
+    v79 = Py_FalseStruct;
+  }
+LABEL_193:
+  v5 = v88;
+  <span class="hljs-keyword">if</span> ( v79 )
+  {
+    v81 = v83;
+    <span class="hljs-keyword">goto</span> LABEL_226;
+  }
+  v7 = <span class="hljs-number">20</span>;
+  v89 = v19;
+  v8 = <span class="hljs-number">3040</span>;
+LABEL_217:
+  <span class="hljs-keyword">if</span> ( !v39 )
+    <span class="hljs-keyword">goto</span> LABEL_224;
+LABEL_218:
+  <span class="hljs-keyword">if</span> ( *v39 &gt;= <span class="hljs-number">0</span> )
+  {
+    v23 = (*(_QWORD *)v39)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v23 )
+      Py_Dealloc(v39);
+  }
+LABEL_223:
+  v5 = v88;
+LABEL_224:
+  v3 = v89;
+LABEL_225:
+  sub_180006240(<span class="hljs-string">&quot;rand0m.check&quot;</span>, v8, v7, <span class="hljs-string">&quot;rand0m.pyx&quot;</span>);
+  v81 = v83;
+  v19 = v3;
+  v55 = v84;
+  v79 = <span class="hljs-number">0LL</span>;
+  <span class="hljs-keyword">if</span> ( v83 )
+  {
+LABEL_226:
+    <span class="hljs-keyword">if</span> ( *v81 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v81)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v81);
+    }
+  }
+  <span class="hljs-keyword">if</span> ( v19 )
+  {
+    <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v19 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v19)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v19);
+    }
+  }
+  <span class="hljs-keyword">if</span> ( v4 )
+  {
+    <span class="hljs-keyword">if</span> ( *v4 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v4)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v4);
+    }
+  }
+  <span class="hljs-keyword">if</span> ( v5 )
+  {
+    <span class="hljs-keyword">if</span> ( *v5 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v5)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v5);
+    }
+  }
+  <span class="hljs-keyword">if</span> ( v55 )
+  {
+    <span class="hljs-keyword">if</span> ( *v55 &gt;= <span class="hljs-number">0</span> )
+    {
+      v23 = (*(_QWORD *)v55)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v23 )
+        Py_Dealloc(v55);
+    }
+  }
+  <span class="hljs-keyword">return</span> v79;
+}</code></pre></div>
+<p>通过交叉引用找到</p>
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/2.png" data-name="2.png" data-alt="2"><img class="md-img" src="/img/CTF/rand0m_writeup_img/2.png" alt="2" loading="lazy" decoding="async"><span class="md-caption">2</span></span>
+<p>向上不远就是rand0m函数地址</p>
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/3.png" data-name="3.png" data-alt="3"><img class="md-img" src="/img/CTF/rand0m_writeup_img/3.png" alt="3" loading="lazy" decoding="async"><span class="md-caption">3</span></span>
+<p>先分析rand0m函数：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">293 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">__int64 __fastcall <span class="hljs-title function_">sub_1800012B0</span><span class="hljs-params">(__int64 a1, _DWORD *a2)</span>
+{
+  __int64 v2; <span class="hljs-comment">// r13</span>
+  <span class="hljs-type">int</span> *v3; <span class="hljs-comment">// r14</span>
+  <span class="hljs-type">int</span> *v5; <span class="hljs-comment">// rdi</span>
+  <span class="hljs-type">int</span> *v6; <span class="hljs-comment">// r12</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> v7; <span class="hljs-comment">// r15d</span>
+  <span class="hljs-type">int</span> *v8; <span class="hljs-comment">// rbx</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> v9; <span class="hljs-comment">// ebp</span>
+  _QWORD *v10; <span class="hljs-comment">// rdx</span>
+  _DWORD *v11; <span class="hljs-comment">// rcx</span>
+  __int64 v12; <span class="hljs-comment">// rsi</span>
+  <span class="hljs-type">bool</span> v13; <span class="hljs-comment">// zf</span>
+  __int64 v14; <span class="hljs-comment">// rax</span>
+  __int64 v15; <span class="hljs-comment">// rax</span>
+  _QWORD *v16; <span class="hljs-comment">// rcx</span>
+  __int64 v17; <span class="hljs-comment">// r8</span>
+  __int64 v18; <span class="hljs-comment">// r9</span>
+  <span class="hljs-type">unsigned</span> __int64 v19; <span class="hljs-comment">// rdx</span>
+  <span class="hljs-type">unsigned</span> __int64 v20; <span class="hljs-comment">// rcx</span>
+  __int64 v21; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v22; <span class="hljs-comment">// rbp</span>
+  <span class="hljs-type">int</span> *v23; <span class="hljs-comment">// rcx</span>
+  __int64 v24; <span class="hljs-comment">// rax</span>
+  __int64 v25; <span class="hljs-comment">// rsi</span>
+  <span class="hljs-type">int</span> *v26; <span class="hljs-comment">// rcx</span>
+  __int64 v27; <span class="hljs-comment">// rax</span>
+  __int64 v28; <span class="hljs-comment">// rbx</span>
+  <span class="hljs-type">int</span> *v29; <span class="hljs-comment">// rcx</span>
+  __int64 v30; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v31; <span class="hljs-comment">// rsi</span>
+  __int64 v32; <span class="hljs-comment">// rax</span>
+
+  v2 = <span class="hljs-number">0LL</span>;
+  v3 = <span class="hljs-number">0LL</span>;
+  v5 = <span class="hljs-number">0LL</span>;
+  v6 = <span class="hljs-number">0LL</span>;
+  v7 = <span class="hljs-number">2</span>;
+  v8 = (<span class="hljs-type">int</span> *)PyTuple_New(<span class="hljs-number">2LL</span>);
+  <span class="hljs-keyword">if</span> ( !v8 )
+  {
+    v9 = <span class="hljs-number">2594</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  <span class="hljs-keyword">if</span> ( *a2 != <span class="hljs-number">-1</span> )
+    ++*a2;
+  v10 = off_18000B688;
+  *((_QWORD *)v8 + <span class="hljs-number">3</span>) = a2;
+  v11 = (_DWORD *)v10[<span class="hljs-number">36</span>];
+  <span class="hljs-keyword">if</span> ( *v11 != <span class="hljs-number">-1</span> )
+    ++*v11;
+  *((_QWORD *)v8 + <span class="hljs-number">4</span>) = v10[<span class="hljs-number">36</span>];
+  v12 = sub_1800042B0(PyLong_Type[<span class="hljs-number">0</span>], v8);
+  <span class="hljs-keyword">if</span> ( !v12 )
+  {
+    v9 = <span class="hljs-number">2602</span>;
+LABEL_48:
+    <span class="hljs-keyword">if</span> ( *v8 &gt;= <span class="hljs-number">0</span> )
+    {
+      v13 = (*(_QWORD *)v8)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v13 )
+LABEL_50:
+        Py_Dealloc(v8);
+    }
+LABEL_77:
+    sub_180006240(<span class="hljs-string">&quot;rand0m.rand0m&quot;</span>, v9, v7, <span class="hljs-string">&quot;rand0m.pyx&quot;</span>);
+    <span class="hljs-keyword">if</span> ( !v5 )
+      <span class="hljs-keyword">goto</span> LABEL_87;
+    <span class="hljs-keyword">goto</span> LABEL_84;
+  }
+  <span class="hljs-keyword">if</span> ( *v8 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v8)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v8);
+  }
+  v5 = (<span class="hljs-type">int</span> *)v12;
+  v14 = PyNumber_Xor(v12, *((_QWORD *)off_18000B688 + <span class="hljs-number">44</span>));
+  <span class="hljs-keyword">if</span> ( !v14 )
+  {
+    v9 = <span class="hljs-number">2615</span>;
+    v7 = <span class="hljs-number">3</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  v6 = (<span class="hljs-type">int</span> *)v14;
+  v15 = sub_180004360(v12, *((_QWORD *)off_18000B688 + <span class="hljs-number">33</span>), <span class="hljs-number">5LL</span>, <span class="hljs-number">0LL</span>);
+  <span class="hljs-keyword">if</span> ( !v15 )
+  {
+    v9 = <span class="hljs-number">2627</span>;
+    v7 = <span class="hljs-number">4</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  v16 = off_18000B688;
+  v3 = (<span class="hljs-type">int</span> *)v15;
+  v17 = PyLong_Type[<span class="hljs-number">0</span>];
+  v18 = *((_QWORD *)off_18000B688 + <span class="hljs-number">32</span>);
+  <span class="hljs-keyword">if</span> ( *(_QWORD *)(v12 + <span class="hljs-number">8</span>) != PyLong_Type[<span class="hljs-number">0</span>] )
+    <span class="hljs-keyword">goto</span> LABEL_32;
+  v19 = *(_QWORD *)(v12 + <span class="hljs-number">16</span>);
+  <span class="hljs-keyword">if</span> ( (v19 &amp; <span class="hljs-number">1</span>) != <span class="hljs-number">0</span> )
+  {
+    <span class="hljs-keyword">if</span> ( *(_DWORD *)v12 != <span class="hljs-number">-1</span> )
+      ++*(_DWORD *)v12;
+    v8 = (<span class="hljs-type">int</span> *)v12;
+    <span class="hljs-keyword">goto</span> LABEL_36;
+  }
+  <span class="hljs-keyword">if</span> ( v19 &gt;= <span class="hljs-number">0x10</span> )
+  {
+    <span class="hljs-keyword">switch</span> ( (v19 &gt;&gt; <span class="hljs-number">3</span>) * (<span class="hljs-number">1</span> - (*(_QWORD *)(v12 + <span class="hljs-number">16</span>) &amp; <span class="hljs-number">3LL</span>)) )
+    {
+      <span class="hljs-keyword">case</span> <span class="hljs-number">0xFFFFFFFFFFFFFFFEu</span>LL:
+        v20 = -(__int64)(*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(v12 + <span class="hljs-number">24</span>) | ((<span class="hljs-type">unsigned</span> __int64)*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(v12 + <span class="hljs-number">28</span>) &lt;&lt; <span class="hljs-number">30</span>));
+        <span class="hljs-keyword">goto</span> LABEL_29;
+      <span class="hljs-keyword">case</span> <span class="hljs-number">2uLL</span>:
+        v20 = *(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(v12 + <span class="hljs-number">24</span>) | ((<span class="hljs-type">unsigned</span> __int64)*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(v12 + <span class="hljs-number">28</span>) &lt;&lt; <span class="hljs-number">30</span>);
+        <span class="hljs-keyword">goto</span> LABEL_29;
+      <span class="hljs-keyword">default</span>:
+        v21 = (*(__int64 (__fastcall **)(__int64, _QWORD))(PyLong_Type[<span class="hljs-number">12</span>] + <span class="hljs-number">88LL</span>))(
+                v12,
+                *((_QWORD *)off_18000B688 + <span class="hljs-number">32</span>));
+        <span class="hljs-keyword">break</span>;
+    }
+    <span class="hljs-keyword">goto</span> LABEL_33;
+  }
+  LODWORD(v20) = *(_DWORD *)(v12 + <span class="hljs-number">24</span>) * (<span class="hljs-number">1</span> - (v19 &amp; <span class="hljs-number">3</span>));
+  <span class="hljs-keyword">if</span> ( (_DWORD)v20 != (<span class="hljs-number">16</span> * (<span class="hljs-type">int</span>)v20) &gt;&gt; <span class="hljs-number">4</span> &amp;&amp; (_DWORD)v20 )
+  {
+    v20 = (<span class="hljs-type">int</span>)v20;
+LABEL_29:
+    <span class="hljs-keyword">if</span> ( v20 == (__int64)(<span class="hljs-number">16</span> * v20) &gt;&gt; <span class="hljs-number">4</span> )
+    {
+      v21 = PyLong_FromLongLong(<span class="hljs-number">16</span> * v20, <span class="hljs-number">16</span> * v20, PyLong_Type[<span class="hljs-number">0</span>], v18);
+      <span class="hljs-keyword">goto</span> LABEL_33;
+    }
+LABEL_32:
+    v21 = PyNumber_Lshift(v12, *((_QWORD *)off_18000B688 + <span class="hljs-number">32</span>));
+    <span class="hljs-keyword">goto</span> LABEL_33;
+  }
+  v21 = PyLong_FromLong((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)(<span class="hljs-number">16</span> * v20));
+LABEL_33:
+  v12 = v21;
+  v8 = (<span class="hljs-type">int</span> *)v21;
+  <span class="hljs-keyword">if</span> ( !v21 )
+  {
+    v9 = <span class="hljs-number">2639</span>;
+    v7 = <span class="hljs-number">5</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  v16 = off_18000B688;
+LABEL_36:
+  v22 = (<span class="hljs-type">int</span> *)PyNumber_And(v12, v16[<span class="hljs-number">48</span>], v17, v18);
+  <span class="hljs-keyword">if</span> ( !v22 )
+  {
+    v9 = <span class="hljs-number">2641</span>;
+    v7 = <span class="hljs-number">5</span>;
+LABEL_66:
+    <span class="hljs-keyword">if</span> ( *v8 &gt;= <span class="hljs-number">0</span> )
+    {
+      v13 = (*(_QWORD *)v8)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v13 )
+        <span class="hljs-keyword">goto</span> LABEL_50;
+    }
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  <span class="hljs-keyword">if</span> ( *(<span class="hljs-type">int</span> *)v12 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v12)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v12);
+  }
+  v23 = v5;
+  v5 = v22;
+  <span class="hljs-keyword">if</span> ( *v23 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v23)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v23);
+  }
+  v24 = sub_180004360(v3, *((_QWORD *)off_18000B688 + <span class="hljs-number">37</span>), <span class="hljs-number">23LL</span>, <span class="hljs-number">0LL</span>);
+  v8 = (<span class="hljs-type">int</span> *)v24;
+  <span class="hljs-keyword">if</span> ( !v24 )
+  {
+    v9 = <span class="hljs-number">2654</span>;
+    v7 = <span class="hljs-number">6</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  v25 = PyNumber_Add(v22, v24);
+  <span class="hljs-keyword">if</span> ( !v25 )
+  {
+    v9 = <span class="hljs-number">2656</span>;
+    v7 = <span class="hljs-number">6</span>;
+    <span class="hljs-keyword">goto</span> LABEL_48;
+  }
+  <span class="hljs-keyword">if</span> ( *v8 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v8)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v8);
+  }
+  v26 = v3;
+  v3 = (<span class="hljs-type">int</span> *)v25;
+  <span class="hljs-keyword">if</span> ( *v26 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v26)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v26);
+  }
+  v27 = sub_180004360(v6, *((_QWORD *)off_18000B688 + <span class="hljs-number">35</span>), <span class="hljs-number">11LL</span>, <span class="hljs-number">1LL</span>);
+  v28 = v27;
+  <span class="hljs-keyword">if</span> ( !v27 )
+  {
+    v9 = <span class="hljs-number">2669</span>;
+    v7 = <span class="hljs-number">7</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  v29 = v6;
+  v6 = (<span class="hljs-type">int</span> *)v27;
+  <span class="hljs-keyword">if</span> ( *v29 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v29)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v29);
+  }
+  v30 = PyNumber_Power(v28, *((_QWORD *)off_18000B688 + <span class="hljs-number">38</span>), Py_NoneStruct);
+  v8 = (<span class="hljs-type">int</span> *)v30;
+  <span class="hljs-keyword">if</span> ( !v30 )
+  {
+    v9 = <span class="hljs-number">2681</span>;
+    v7 = <span class="hljs-number">8</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  v31 = (<span class="hljs-type">int</span> *)PyNumber_Remainder(v30, *((_QWORD *)off_18000B688 + <span class="hljs-number">49</span>));
+  <span class="hljs-keyword">if</span> ( !v31 )
+  {
+    v9 = <span class="hljs-number">2683</span>;
+    v7 = <span class="hljs-number">8</span>;
+    <span class="hljs-keyword">goto</span> LABEL_66;
+  }
+  <span class="hljs-keyword">if</span> ( *v8 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v8)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v8);
+  }
+  v5 = v31;
+  <span class="hljs-keyword">if</span> ( *v22 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v22)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v22);
+  }
+  v32 = PyTuple_New(<span class="hljs-number">2LL</span>);
+  <span class="hljs-keyword">if</span> ( !v32 )
+  {
+    v9 = <span class="hljs-number">2697</span>;
+    v7 = <span class="hljs-number">9</span>;
+    <span class="hljs-keyword">goto</span> LABEL_77;
+  }
+  <span class="hljs-keyword">if</span> ( *v31 != <span class="hljs-number">-1</span> )
+    ++*v31;
+  *(_QWORD *)(v32 + <span class="hljs-number">24</span>) = v31;
+  <span class="hljs-keyword">if</span> ( *v3 != <span class="hljs-number">-1</span> )
+    ++*v3;
+  *(_QWORD *)(v32 + <span class="hljs-number">32</span>) = v3;
+  v2 = v32;
+LABEL_84:
+  <span class="hljs-keyword">if</span> ( *v5 &gt;= <span class="hljs-number">0</span> )
+  {
+    v13 = (*(_QWORD *)v5)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v13 )
+      Py_Dealloc(v5);
+  }
+LABEL_87:
+  <span class="hljs-keyword">if</span> ( v6 )
+  {
+    <span class="hljs-keyword">if</span> ( *v6 &gt;= <span class="hljs-number">0</span> )
+    {
+      v13 = (*(_QWORD *)v6)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v13 )
+        Py_Dealloc(v6);
+    }
+  }
+  <span class="hljs-keyword">if</span> ( v3 )
+  {
+    <span class="hljs-keyword">if</span> ( *v3 &gt;= <span class="hljs-number">0</span> )
+    {
+      v13 = (*(_QWORD *)v3)-- == <span class="hljs-number">1LL</span>;
+      <span class="hljs-keyword">if</span> ( v13 )
+        Py_Dealloc(v3);
+    }
+  }
+  <span class="hljs-keyword">return</span> v2;
+}</code></pre></div>
+<p>提取关键运算：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">22 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">v12
+v14 = PyNumber_Xor(v12, *((_QWORD *)off_18000B688 + <span class="hljs-number">44</span>));<span class="hljs-comment">//查表+44为2654435769</span>
+v6 = (<span class="hljs-type">int</span> *)v14;
+v27 = sub_180004360(v6, *((_QWORD *)off_18000B688 + <span class="hljs-number">35</span>), <span class="hljs-number">11LL</span>, <span class="hljs-number">1LL</span>);<span class="hljs-comment">//查表+35为11</span>
+v28 = v27;
+v30 = PyNumber_Power(v28, *((_QWORD *)off_18000B688 + <span class="hljs-number">38</span>), Py_NoneStruct);<span class="hljs-comment">//查表+38为65547</span>
+v31 = (<span class="hljs-type">int</span> *)PyNumber_Remainder(v30, *((_QWORD *)off_18000B688 + <span class="hljs-number">49</span>));<span class="hljs-comment">//查表+49为4294967293</span>
+v32 = PyTuple_New(<span class="hljs-number">2LL</span>);<span class="hljs-comment">//创建返回元组</span>
+*(_QWORD *)(v32 + <span class="hljs-number">24</span>) = v31;<span class="hljs-comment">//元组第一个元素为v31</span>
+
+
+
+v15 = sub_180004360(v12, *((_QWORD *)off_18000B688 + <span class="hljs-number">33</span>), <span class="hljs-number">5LL</span>, <span class="hljs-number">0LL</span>);<span class="hljs-comment">//查表+33为5</span>
+v3 = (<span class="hljs-type">int</span> *)v15;
+v24 = sub_180004360(v3, *((_QWORD *)off_18000B688 + <span class="hljs-number">37</span>), <span class="hljs-number">23LL</span>, <span class="hljs-number">0LL</span>);<span class="hljs-comment">//查表+37为23</span>
+v21 = PyNumber_Lshift(v12, *((_QWORD *)off_18000B688 + <span class="hljs-number">32</span>));<span class="hljs-comment">//查表+32为4</span>
+v12 = v21;
+v16 = off_18000B688;
+v22 = (<span class="hljs-type">int</span> *)PyNumber_And(v12, v16[<span class="hljs-number">48</span>], v17, v18);<span class="hljs-comment">//查表v16[48]为4198170623</span>
+v25 = PyNumber_Add(v22, v24);
+v3 = (<span class="hljs-type">int</span> *)v25;
+*(_QWORD *)(v32 + <span class="hljs-number">32</span>) = v3;<span class="hljs-comment">//元组第二个元组为v3</span></code></pre></div>
+<p>分析sub_180004360可知该函数为右移函数：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">50 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">__int64 __fastcall <span class="hljs-title function_">sub_180004360</span><span class="hljs-params">(__int64 a1, __int64 a2, <span class="hljs-type">char</span> a3, <span class="hljs-type">int</span> a4)</span>
+{
+  <span class="hljs-type">unsigned</span> __int64 v4; <span class="hljs-comment">// r9</span>
+  __int64 result; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">unsigned</span> __int64 v6; <span class="hljs-comment">// r9</span>
+  __int64 v7; <span class="hljs-comment">// rcx</span>
+  __int64 v8; <span class="hljs-comment">// rcx</span>
+  __int64 (*v9)(<span class="hljs-type">void</span>); <span class="hljs-comment">// rax</span>
+
+  <span class="hljs-keyword">if</span> ( *(_QWORD *)(a1 + <span class="hljs-number">8</span>) == PyLong_Type[<span class="hljs-number">0</span>] )
+  {
+    v4 = *(_QWORD *)(a1 + <span class="hljs-number">16</span>);
+    <span class="hljs-keyword">if</span> ( (v4 &amp; <span class="hljs-number">1</span>) != <span class="hljs-number">0</span> )
+    {
+      <span class="hljs-keyword">if</span> ( *(_DWORD *)a1 != <span class="hljs-number">-1</span> )
+        ++*(_DWORD *)a1;
+      <span class="hljs-keyword">return</span> a1;
+    }
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( v4 &gt;= <span class="hljs-number">0x10</span> )
+    {
+      v6 = v4 &gt;&gt; <span class="hljs-number">3</span>;
+      <span class="hljs-keyword">switch</span> ( v6 * (<span class="hljs-number">1</span> - (*(_QWORD *)(a1 + <span class="hljs-number">16</span>) &amp; <span class="hljs-number">3LL</span>)) )
+      {
+        <span class="hljs-keyword">case</span> <span class="hljs-number">0xFFFFFFFFFFFFFFFEu</span>LL:
+          v7 = -(__int64)(*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(a1 + <span class="hljs-number">24</span>) | ((<span class="hljs-type">unsigned</span> __int64)*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(a1 + <span class="hljs-number">28</span>) &lt;&lt; <span class="hljs-number">30</span>)) &gt;&gt; a3;
+          result = PyLong_FromLongLong(v7, v7, <span class="hljs-number">0x180000000u</span>LL, v6);
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-number">2uLL</span>:
+          v8 = (__int64)(*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(a1 + <span class="hljs-number">24</span>) | ((<span class="hljs-type">unsigned</span> __int64)*(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)(a1 + <span class="hljs-number">28</span>) &lt;&lt; <span class="hljs-number">30</span>)) &gt;&gt; a3;
+          result = PyLong_FromLongLong(v8, v8, <span class="hljs-number">0x180000000u</span>LL, v6);
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">default</span>:
+          result = (*(__int64 (__fastcall **)(__int64, __int64))(PyLong_Type[<span class="hljs-number">12</span>] + <span class="hljs-number">96LL</span>))(a1, a2);
+          <span class="hljs-keyword">break</span>;
+      }
+    }
+    <span class="hljs-keyword">else</span>
+    {
+      <span class="hljs-keyword">return</span> PyLong_FromLong((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)((<span class="hljs-type">int</span>)(*(_DWORD *)(a1 + <span class="hljs-number">24</span>) * (<span class="hljs-number">1</span> - (v4 &amp; <span class="hljs-number">3</span>))) &gt;&gt; a3));
+    }
+  }
+  <span class="hljs-keyword">else</span>
+  {
+    v9 = (__int64 (*)(<span class="hljs-type">void</span>))PyNumber_Rshift;
+    <span class="hljs-keyword">if</span> ( a4 )
+      v9 = (__int64 (*)(<span class="hljs-type">void</span>))PyNumber_InPlaceRshift;
+    <span class="hljs-keyword">return</span> v9();
+  }
+  <span class="hljs-keyword">return</span> result;
+}</code></pre></div>
+<p>猜测rand0m函数中v12为16进制字符串所表示的数字，可得到rand0m函数算法：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">2 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python">第一个返回值：((<span class="hljs-built_in">int</span>(n,<span class="hljs-number">16</span>)^<span class="hljs-number">2654435769</span>)&gt;&gt;<span class="hljs-number">11</span>)**<span class="hljs-number">65537</span>%<span class="hljs-number">4294967293</span>
+第二个返回值：((<span class="hljs-built_in">int</span>(n,<span class="hljs-number">16</span>)&lt;&lt;<span class="hljs-number">4</span>)&amp;<span class="hljs-number">4198170623</span>)+((n&gt;&gt;<span class="hljs-number">5</span>)&gt;&gt;<span class="hljs-number">23</span>)</code></pre></div>
+<p>经验证算法正确</p>
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/6.png" data-name="6.png" data-alt="6"><img class="md-img" src="/img/CTF/rand0m_writeup_img/6.png" alt="6" loading="lazy" decoding="async"><span class="md-caption">6</span></span>
+<p>接着分析check函数，该函数一定调用了rand0m函数，于是在rand0m函数中调用<code class="md-code-inline">PyNumber_Xor</code>函数处下断点（其中一个参数（ecx）为rand0m接受的参数），输入<code class="md-code-inline">rand0m.check(&quot;123456789abcdefedcba98765432123456789&quot;)</code>，共断下来4次，查看ecx指向的地址：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">assembly</span><span class="md-code-meta">16 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-assembly">Py_long(0x12345678):
+0000010DB87AB070  01 00 00 00 00 00 00 00 10 28 F5 E1 FD 7F 00 00  .........(õáý...  
+0000010DB87AB080  08 00 00 00 00 00 00 00 78 56 34 12 00 00 00 00  ........xV4.....  
+
+Py_long(0x9ABCDEFE):
+0000010DB8A67FD0  01 00 00 00 00 00 00 00 10 28 F5 E1 FD 7F 00 00  .........(õáý...  
+0000010DB8A67FE0  10 00 00 00 00 00 00 00 FE DE BC 1A 02 00 00 00  ........þÞ¼.....  
+
+Py_long(0xDCBA9876):
+0000010DB87AB230  01 00 00 00 00 00 00 00 10 28 F5 E1 FD 7F 00 00  .........(õáý...  
+0000010DB87AB240  10 00 00 00 00 00 00 00 76 98 BA 1C 03 00 00 00  ........v.º.....  
+
+Py_long(0x54321234):
+0000010DB8A67E50  01 00 00 00 00 00 00 00 10 28 F5 E1 FD 7F 00 00  .........(õáý...  
+0000010DB8A67E60  10 00 00 00 00 00 00 00 34 12 32 14 01 00 00 00  ........4.2.....  
+</code></pre></div>
+<p>可以看出check读取输入的前32位（bug: ，它并没有判断输入长度，所以flag后面加任意数字都可以），每8位为一组调用rand0m函数</p>
+<p>同时观察堆栈：
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/4.png" data-name="4.png" data-alt="4"><img class="md-img" src="/img/CTF/rand0m_writeup_img/4.png" alt="4" loading="lazy" decoding="async"><span class="md-caption">4</span></span></p>
+<p>可以找到check函数调用rand0m的地方：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">1 line</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">v52 = sub_180004660(v39, &amp;v85[-v51], (<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)(v51 + <span class="hljs-number">1</span>));</code></pre></div>
+<p>后面使用该返回值：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">2 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c">v34 = sub_180004790(v52, <span class="hljs-number">1LL</span>, v53, <span class="hljs-number">0LL</span>);
+v39 = (<span class="hljs-type">int</span> *)sub_180004790(v55, <span class="hljs-number">0LL</span>, v63, <span class="hljs-number">0LL</span>);</code></pre></div>
+<p>分析<code class="md-code-inline">sub_180004790</code>可知该函数用来根据索引值取出元素：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">98 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c"><span class="hljs-type">int</span> *__fastcall <span class="hljs-title function_">sub_180004790</span><span class="hljs-params">(_QWORD *a1, __int64 a2, __int64 a3, <span class="hljs-type">int</span> a4)</span>
+{
+  __int64 v4; <span class="hljs-comment">// rsi</span>
+  __int64 v5; <span class="hljs-comment">// rbx</span>
+  BOOL v7; <span class="hljs-comment">// eax</span>
+  <span class="hljs-type">unsigned</span> __int64 v8; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *result; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">bool</span> v10; <span class="hljs-comment">// zf</span>
+  <span class="hljs-type">int</span> v11; <span class="hljs-comment">// ecx</span>
+  __int64 v12; <span class="hljs-comment">// rbp</span>
+  __int64 v13; <span class="hljs-comment">// rsi</span>
+  __int64 v14; <span class="hljs-comment">// rax</span>
+  <span class="hljs-type">int</span> *v15; <span class="hljs-comment">// rbx</span>
+  __int64 Item; <span class="hljs-comment">// rax</span>
+  __int64 v17; <span class="hljs-comment">// rdi</span>
+  __int64 v18; <span class="hljs-comment">// rax</span>
+  BOOL v19; <span class="hljs-comment">// eax</span>
+  __int64 v20; <span class="hljs-comment">// rax</span>
+
+  v4 = a1[<span class="hljs-number">1</span>];
+  v5 = a2;
+  <span class="hljs-keyword">if</span> ( v4 == PyList_Type )
+  {
+    v19 = a2 &gt;= <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">if</span> ( !a4 )
+      v19 = <span class="hljs-number">1</span>;
+    <span class="hljs-keyword">if</span> ( !v19 )
+      a2 += a1[<span class="hljs-number">2</span>];
+    <span class="hljs-keyword">if</span> ( (<span class="hljs-type">unsigned</span> __int64)a2 &lt; a1[<span class="hljs-number">2</span>] )
+    {
+      result = *(<span class="hljs-type">int</span> **)(a1[<span class="hljs-number">3</span>] + <span class="hljs-number">8</span> * a2);
+      v10 = *result == <span class="hljs-number">-1</span>;
+      v11 = *result + <span class="hljs-number">1</span>;
+LABEL_38:
+      <span class="hljs-keyword">if</span> ( !v10 )
+        *result = v11;
+      <span class="hljs-keyword">return</span> result;
+    }
+    <span class="hljs-keyword">goto</span> LABEL_34;
+  }
+  <span class="hljs-keyword">if</span> ( v4 == PyTuple_Type )
+  {
+    v7 = a2 &gt;= <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">if</span> ( !a4 )
+      v7 = <span class="hljs-number">1</span>;
+    <span class="hljs-keyword">if</span> ( v7 )
+      v8 = a2;
+    <span class="hljs-keyword">else</span>
+      v8 = a2 + a1[<span class="hljs-number">2</span>];
+    <span class="hljs-keyword">if</span> ( v8 &lt; a1[<span class="hljs-number">2</span>] )
+    {
+      result = (<span class="hljs-type">int</span> *)a1[v8 + <span class="hljs-number">3</span>];
+      v10 = *result == <span class="hljs-number">-1</span>;
+      v11 = *result + <span class="hljs-number">1</span>;
+      <span class="hljs-keyword">goto</span> LABEL_38;
+    }
+    <span class="hljs-keyword">goto</span> LABEL_34;
+  }
+  v12 = *(_QWORD *)(v4 + <span class="hljs-number">112</span>);
+  v13 = *(_QWORD *)(v4 + <span class="hljs-number">104</span>);
+  <span class="hljs-keyword">if</span> ( !v12 || !*(_QWORD *)(v12 + <span class="hljs-number">8</span>) )
+  {
+    <span class="hljs-keyword">if</span> ( !v13 || !*(_QWORD *)(v13 + <span class="hljs-number">24</span>) )
+    {
+LABEL_34:
+      v20 = PyLong_FromSsize_t(v5);
+      v15 = (<span class="hljs-type">int</span> *)v20;
+      <span class="hljs-keyword">if</span> ( !v20 )
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0LL</span>;
+      Item = PyObject_GetItem(a1, v20);
+      <span class="hljs-keyword">goto</span> LABEL_14;
+    }
+    <span class="hljs-keyword">if</span> ( a4 &amp;&amp; a2 &lt; <span class="hljs-number">0</span> &amp;&amp; *(_QWORD *)v13 )
+    {
+      v18 = (*(__int64 (**)(<span class="hljs-type">void</span>))v13)();
+      <span class="hljs-keyword">if</span> ( v18 &gt;= <span class="hljs-number">0</span> )
+        <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span> *)(*(__int64 (__fastcall **)(_QWORD *, __int64))(v13 + <span class="hljs-number">24</span>))(a1, v18 + v5);
+      <span class="hljs-keyword">if</span> ( !(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)PyErr_ExceptionMatches(PyExc_OverflowError) )
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0LL</span>;
+      PyErr_Clear();
+    }
+    <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span> *)(*(__int64 (__fastcall **)(_QWORD *, __int64))(v13 + <span class="hljs-number">24</span>))(a1, v5);
+  }
+  v14 = PyLong_FromSsize_t(a2);
+  v15 = (<span class="hljs-type">int</span> *)v14;
+  <span class="hljs-keyword">if</span> ( !v14 )
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0LL</span>;
+  Item = (*(__int64 (__fastcall **)(_QWORD *, __int64))(v12 + <span class="hljs-number">8</span>))(a1, v14);
+LABEL_14:
+  v17 = Item;
+  <span class="hljs-keyword">if</span> ( *v15 &gt;= <span class="hljs-number">0</span> )
+  {
+    v10 = (*(_QWORD *)v15)-- == <span class="hljs-number">1LL</span>;
+    <span class="hljs-keyword">if</span> ( v10 )
+      Py_Dealloc(v15);
+  }
+  <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span> *)v17;
+}</code></pre></div>
+<p>继续分析可知去除两个元素后调用了<code class="md-code-inline">PyObject_RichCompare</code>进行比较，由于我懒得静态分析期待值是什么，可以直接在调用<code class="md-code-inline">PyObject_RichCompare</code>处函数下断点查看内存，由于第二个<code class="md-code-inline">PyObject_RichCompare</code>函数需要第一个<code class="md-code-inline">PyObject_RichCompare</code>函数返回True才会执行，所以可以直接将rcx的指向的地址修改成与rdx一致</p>
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/5.png" data-name="5.png" data-alt="5"><img class="md-img" src="/img/CTF/rand0m_writeup_img/5.png" alt="5" loading="lazy" decoding="async"><span class="md-caption">5</span></span>
+<p>之后可以得到rand0m函数的期待值：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">text</span><span class="md-code-meta">4 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-text">(0x98D24B3A,0x12287F38)
+(0xE0F1DB77,0x4A30F74D)
+(0xADF38403,0x23A1268)
+(0xD8499BB6,0x88108807)</code></pre></div>
+<p>由于用c语言写幂模会溢出不知道怎么处理，所以先用c语言暴力找出满足第二个参数的输入，然后再用python筛选满足第一个参数的输入（只给出第一部分的求解代码）：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">c</span><span class="md-code-meta">14 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span>
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> {
+    <span class="hljs-type">uint64_t</span> y = <span class="hljs-number">0x12287F38</span>;
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;a=[&quot;</span>);
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">uint64_t</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">0xffffffff</span>; i++) {
+        <span class="hljs-keyword">if</span> (((i &lt;&lt; <span class="hljs-number">4</span>) &amp; <span class="hljs-number">4198170623</span>) + ((i &gt;&gt; <span class="hljs-number">5</span>) &gt;&gt; <span class="hljs-number">23</span>) == y) {
+            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\&quot;%08X\\&quot;,&quot;</span>, i);
+        }
+    }
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;]\\n&quot;</span>);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre></div>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">python</span><span class="md-code-meta">6 lines</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-python">a=[<span class="hljs-string">&quot;812287F3&quot;</span>,<span class="hljs-string">&quot;812297F3&quot;</span>,<span class="hljs-string">&quot;8122C7F3&quot;</span>,<span class="hljs-string">&quot;8122D7F3&quot;</span>,<span class="hljs-string">&quot;812687F3&quot;</span>,<span class="hljs-string">&quot;812697F3&quot;</span>,<span class="hljs-string">&quot;8126C7F3&quot;</span>,<span class="hljs-string">&quot;8126D7F3&quot;</span>,<span class="hljs-string">&quot;812A87F3&quot;</span>,<span class="hljs-string">&quot;812A97F3&quot;</span>,<span class="hljs-string">&quot;812AC7F3&quot;</span>,<span class="hljs-string">&quot;812AD7F3&quot;</span>,<span class="hljs-string">&quot;812E87F3&quot;</span>,<span class="hljs-string">&quot;812E97F3&quot;</span>,<span class="hljs-string">&quot;812EC7F3&quot;</span>,<span class="hljs-string">&quot;812ED7F3&quot;</span>,<span class="hljs-string">&quot;813287F3&quot;</span>,<span class="hljs-string">&quot;813297F3&quot;</span>,<span class="hljs-string">&quot;8132C7F3&quot;</span>,<span class="hljs-string">&quot;8132D7F3&quot;</span>,<span class="hljs-string">&quot;813687F3&quot;</span>,<span class="hljs-string">&quot;813697F3&quot;</span>,<span class="hljs-string">&quot;8136C7F3&quot;</span>,<span class="hljs-string">&quot;8136D7F3&quot;</span>,<span class="hljs-string">&quot;813A87F3&quot;</span>,<span class="hljs-string">&quot;813A97F3&quot;</span>,<span class="hljs-string">&quot;813AC7F3&quot;</span>,<span class="hljs-string">&quot;813AD7F3&quot;</span>,<span class="hljs-string">&quot;813E87F3&quot;</span>,<span class="hljs-string">&quot;813E97F3&quot;</span>,<span class="hljs-string">&quot;813EC7F3&quot;</span>,<span class="hljs-string">&quot;813ED7F3&quot;</span>,<span class="hljs-string">&quot;816287F3&quot;</span>,<span class="hljs-string">&quot;816297F3&quot;</span>,<span class="hljs-string">&quot;8162C7F3&quot;</span>,<span class="hljs-string">&quot;8162D7F3&quot;</span>,<span class="hljs-string">&quot;816687F3&quot;</span>,<span class="hljs-string">&quot;816697F3&quot;</span>,<span class="hljs-string">&quot;8166C7F3&quot;</span>,<span class="hljs-string">&quot;8166D7F3&quot;</span>,<span class="hljs-string">&quot;816A87F3&quot;</span>,<span class="hljs-string">&quot;816A97F3&quot;</span>,<span class="hljs-string">&quot;816AC7F3&quot;</span>,<span class="hljs-string">&quot;816AD7F3&quot;</span>,<span class="hljs-string">&quot;816E87F3&quot;</span>,<span class="hljs-string">&quot;816E97F3&quot;</span>,<span class="hljs-string">&quot;816EC7F3&quot;</span>,<span class="hljs-string">&quot;816ED7F3&quot;</span>,<span class="hljs-string">&quot;817287F3&quot;</span>,<span class="hljs-string">&quot;817297F3&quot;</span>,<span class="hljs-string">&quot;8172C7F3&quot;</span>,<span class="hljs-string">&quot;8172D7F3&quot;</span>,<span class="hljs-string">&quot;817687F3&quot;</span>,<span class="hljs-string">&quot;817697F3&quot;</span>,<span class="hljs-string">&quot;8176C7F3&quot;</span>,<span class="hljs-string">&quot;8176D7F3&quot;</span>,<span class="hljs-string">&quot;817A87F3&quot;</span>,<span class="hljs-string">&quot;817A97F3&quot;</span>,<span class="hljs-string">&quot;817AC7F3&quot;</span>,<span class="hljs-string">&quot;817AD7F3&quot;</span>,<span class="hljs-string">&quot;817E87F3&quot;</span>,<span class="hljs-string">&quot;817E97F3&quot;</span>,<span class="hljs-string">&quot;817EC7F3&quot;</span>,<span class="hljs-string">&quot;817ED7F3&quot;</span>,]
+
+<span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> a:
+    <span class="hljs-keyword">if</span>(((<span class="hljs-built_in">int</span>(n,<span class="hljs-number">16</span>)^<span class="hljs-number">2654435769</span>)&gt;&gt;<span class="hljs-number">11</span>)**<span class="hljs-number">65537</span>%<span class="hljs-number">4294967293</span>==<span class="hljs-number">0x98D24B3A</span>):
+        <span class="hljs-built_in">print</span>(n)
+</code></pre></div>
+<p>最后可得到满足条件的输入：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">text</span><span class="md-code-meta">1 line</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-text">813A97F3D4B34F74802BA12678950880</code></pre></div>
+<p>但由于前文所说没有限制长度，所以输入可以是：</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">text</span><span class="md-code-meta">1 line</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-text">813A97F3D4B34F74802BA12678950880+任意16进制数字</code></pre></div>
+<p>最终flag为</p>
+<div class="md-code"><div class="md-code-bar"><span class="md-code-lang">text</span><span class="md-code-meta">1 line</span><button class="md-code-copy" type="button" data-copy>copy</button></div><pre class="md-code-body"><code class="hljs language-text">flag{813A97F3D4B34F74802BA12678950880}</code></pre></div>
+<span class="md-media" data-kind="image" data-src="/img/CTF/rand0m_writeup_img/8.png" data-name="8.png" data-alt="8"><img class="md-img" src="/img/CTF/rand0m_writeup_img/8.png" alt="8" loading="lazy" decoding="async"><span class="md-caption">8</span></span>
+`,toc:[]};export{e as default};

@@ -1,0 +1,1 @@
+function e(e,t){let n=Array.from({length:t},()=>Array.from({length:e},()=>({t:` `})));return{g:n,put:(r,i,a,o)=>{let s=Math.round(r),c=Math.round(i);s>=0&&s<e&&c>=0&&c<t&&(n[c][s]={t:a,c:o})}}}function t(e,t,n,r,i){[...r].forEach((r,a)=>{r!==` `&&e(t+a,n,r,i)})}export{t as n,e as t};

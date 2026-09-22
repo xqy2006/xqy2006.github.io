@@ -1,0 +1,1 @@
+var e=(e,t,n=`  `,r)=>Array.from({length:t},()=>Array.from({length:e},()=>({t:n,c:r})));export{e as t};
